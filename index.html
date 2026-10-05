@@ -156,7 +156,7 @@ h3{font-size:1rem;font-weight:700}
 .tbl{width:100%;border-collapse:collapse;font-size:.85rem}
 .tbl th{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;text-align:right;padding:6px 4px;border-bottom:1px solid var(--line)}
 .tbl th:first-child,.tbl td:first-child{text-align:left}
-.tbl td{padding:8px 4px;border-bottom:1px solid var(--line);text-align:right}
+.tbl td{white-space:nowrap;padding:8px 4px;border-bottom:1px solid var(--line);text-align:right}
 .tbl tr.fut td{color:var(--faint)}
 .tbl tfoot td{font-weight:700;border-bottom:0;border-top:2px solid var(--fg)}
 .scrollx{overflow-x:auto}
@@ -347,6 +347,37 @@ h3{font-size:1rem;font-weight:700}
 .sync{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:700;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:4px 10px}
 .sync i{width:8px;height:8px;border-radius:50%;background:var(--faint)}
 .sync.on i{background:var(--good)}.sync.con i{background:var(--warn)}.sync.off i{background:var(--danger)}
+.ver{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:.7rem;font-weight:700;color:var(--muted);background:none;border:0;padding:4px 2px;cursor:pointer}
+.ver i{width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.ver.on i{background:var(--good)}.ver.con i{background:var(--warn)}.ver.off i{background:var(--danger)}
+.dia{width:44px;height:44px;border-radius:12px;background:var(--mint-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.dia b{font-family:var(--f-num);font-size:1rem;color:var(--mint-strong)}.dia span{font-size:.65rem;color:var(--muted);text-transform:uppercase;margin-top:2px}
+.upd{border-top:1px solid var(--line);padding-top:10px}.upd:first-of-type{border-top:0;padding-top:0}
+.upd ul{margin:6px 0 0;padding-left:18px;font-size:.86rem;color:var(--muted)}.upd li{margin:3px 0}
+.upd.nova b{color:var(--mint)}
+.ptab{display:flex;flex-direction:column}
+.p-ok{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)}
+.prow{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:0}
+.prow .t{font-weight:700}.prow .d{font-size:.78rem;color:var(--muted)}
+.prow .r{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:3px}.prow .v{font-weight:700}
+.prow.ok .t,.prow.ok .v{opacity:.6}
+.prow.tot{border-top:2px solid var(--fg);border-bottom:0;margin-top:2px}.prow.tot .t,.prow.tot .v{font-family:var(--f-display);font-size:1.05rem}
+.pchk{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);background:var(--surface);color:#fff;font-weight:900;cursor:pointer;display:grid;place-items:center;padding:0}
+.pchk[aria-pressed="true"]{background:var(--good);border-color:var(--good)}
+.pchk:focus-visible,.plink:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.plink{background:none;border:0;padding:0;text-align:left;cursor:pointer;font:inherit;color:inherit;min-width:0}
+.psig{font-weight:800;color:var(--muted);text-align:center}.pic{text-align:center;font-size:1.1rem}
+.prow.ent .v{color:var(--good)}
+.ptable{padding:6px 14px 14px}
+.phead,.prow2{display:grid;grid-template-columns:44px minmax(0,1fr) auto 32px;gap:8px;align-items:center}
+.phead{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;padding:10px 0;border-bottom:1px solid var(--line)}
+.prow2{padding:10px 0;border-bottom:1px solid var(--line)}
+.prow2.fat{background:color-mix(in srgb,var(--mint) 7%,transparent);margin:0 -14px;padding:10px 14px}
+.prow2 .t{font-weight:700}.prow2 .d{font-size:.76rem;color:var(--muted)}.prow2 .v{font-weight:700;text-align:right}
+.prow2.ok .t,.prow2.ok .v{opacity:.55}
+.pdia{font-size:.8rem;color:var(--muted)}
+.prow2.ptot{border-top:2px solid var(--fg);border-bottom:0}.prow2.ptot .t,.prow2.ptot .v{font-family:var(--f-display);font-size:1.1rem;font-weight:800}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(30px);opacity:.6}}}
 </style>
 </head>
@@ -355,7 +386,7 @@ h3{font-size:1rem;font-weight:700}
 <div class="app">
   <header class="top">
     <div class="brand">Meu<b>Dinheiro</b></div>
-    <div class="row"><span class="sync" id="sync" title="Situação do salvamento"><i></i><span>Salvando no aparelho</span></span></div>
+    <div class="row"><button class="ver" id="sync" data-act="tab" data-t="config" aria-label="Versão do app e atualizações"><i></i><span>v1.1</span></button></div>
   </header>
   <main id="main"></main>
 </div>
@@ -382,7 +413,7 @@ const mesCurto=v=>`${MES3[ymM(v)]}/${String(ymY(v)).slice(2)}`;
 const ddmm=d=>`${d.slice(8,10)}/${d.slice(5,7)}`;
 const ddmmaa=d=>`${d.slice(8,10)}/${d.slice(5,7)}/${d.slice(2,4)}`;
 
-const SEED={"config": {"teto": 270000, "inicio": "2026-10", "saldoInicial": 0, "levarSobra": true, "salarioDia": 5}, "salarios": [{"de": "2026-10", "valor": 580000}], "salHist": {"2022-09": 38542, "2022-10": 226198, "2022-11": 226198, "2023-01": 226198, "2023-02": 226524, "2023-03": 226524, "2023-04": 226524, "2023-05": 226524, "2023-06": 228109, "2023-07": 329045, "2023-08": 329045, "2023-09": 329045, "2023-10": 329045, "2023-11": 329045, "2023-12": 329045, "2024-01": 329469, "2024-02": 188934, "2024-03": 778976, "2024-04": 213400, "2024-05": 473307, "2024-06": 484468, "2024-07": 484468, "2024-08": 484468, "2024-09": 484468, "2024-10": 484468, "2024-11": 334468, "2024-12": 484468, "2025-01": 483302, "2025-02": 483302, "2025-03": 483302, "2025-04": 483302, "2025-05": 403302, "2025-06": 483302, "2025-07": 483302, "2025-08": 483302, "2025-09": 483302, "2025-10": 483302, "2025-11": 483302, "2025-12": 533903, "2026-01": 533903, "2026-02": 733903, "2026-03": 533903, "2026-04": 541679, "2026-05": 541679, "2026-06": 616140, "2026-07": 599848}, "cats": [{"id": "mercado", "nome": "Mercado", "ic": "🛒", "grupo": "nec"}, {"id": "padaria", "nome": "Padaria e feira", "ic": "🥖", "grupo": "nec"}, {"id": "restaurante", "nome": "Restaurante", "ic": "🍽️", "grupo": "des"}, {"id": "delivery", "nome": "Delivery", "ic": "🛵", "grupo": "des"}, {"id": "bar", "nome": "Bar e bebidas", "ic": "🍺", "grupo": "des"}, {"id": "lanches", "nome": "Lanches e doces", "ic": "🍦", "grupo": "des"}, {"id": "uber", "nome": "Uber e táxi", "ic": "🚕", "grupo": "nec"}, {"id": "combustivel", "nome": "Combustível", "ic": "⛽", "grupo": "nec"}, {"id": "estacionamento", "nome": "Estacionamento", "ic": "🅿️", "grupo": "nec"}, {"id": "academia", "nome": "Academia e esporte", "ic": "💪", "grupo": "nec"}, {"id": "saude", "nome": "Saúde e farmácia", "ic": "💊", "grupo": "nec"}, {"id": "beleza", "nome": "Beleza e cuidados", "ic": "💅", "grupo": "des"}, {"id": "roupas", "nome": "Roupas e calçados", "ic": "👕", "grupo": "des"}, {"id": "casa", "nome": "Casa e utilidades", "ic": "🏠", "grupo": "nec"}, {"id": "online", "nome": "Compras online", "ic": "📦", "grupo": "des"}, {"id": "assinaturas", "nome": "Assinaturas", "ic": "📺", "grupo": "des"}, {"id": "telefone", "nome": "Telefone e internet", "ic": "📱", "grupo": "nec"}, {"id": "moradia", "nome": "Moradia", "ic": "🔑", "grupo": "nec"}, {"id": "lazer", "nome": "Lazer e passeios", "ic": "🎬", "grupo": "des"}, {"id": "jogos", "nome": "Jogos", "ic": "🎮", "grupo": "des"}, {"id": "apostas", "nome": "Apostas", "ic": "🎲", "grupo": "des"}, {"id": "presentes", "nome": "Presentes", "ic": "🎁", "grupo": "des"}, {"id": "doacoes", "nome": "Igreja e doações", "ic": "⛪", "grupo": "des"}, {"id": "pix-outros", "nome": "Pix para outros", "ic": "🤝", "grupo": "des"}, {"id": "educacao", "nome": "Educação e livros", "ic": "📚", "grupo": "nec"}, {"id": "pets", "nome": "Pets", "ic": "🐾", "grupo": "nec"}, {"id": "viagem", "nome": "Viagens", "ic": "✈️", "grupo": "des"}, {"id": "emprestimo", "nome": "Empréstimos", "ic": "🏦", "grupo": "div"}, {"id": "juros", "nome": "Juros e tarifas", "ic": "🧾", "grupo": "div"}, {"id": "outros", "nome": "A definir", "ic": "❔", "grupo": "des"}], "cards": [{"id": "bb", "nome": "Cartão BB", "tom": "lilac", "limite": 0, "fecha": 26, "vence": 8, "fechaNaAtual": true}, {"id": "mp", "nome": "Mercado Pago", "tom": "mint", "limite": 0, "fecha": 2, "vence": 7, "fechaNaAtual": true}], "recs": [{"id": "r5041", "desc": "Academia WEGYM", "cat": "academia", "valor": 25900, "dia": 28, "forma": "credito", "inicio": "2026-01", "card": "bb"}, {"id": "r5042", "desc": "Vivo", "cat": "telefone", "valor": 9000, "dia": 6, "forma": "credito", "inicio": "2026-01", "card": "bb"}, {"id": "r5043", "desc": "YouTube Premium", "cat": "assinaturas", "valor": 6990, "dia": 5, "forma": "credito", "inicio": "2026-01", "card": "bb"}, {"id": "r5044", "desc": "Spotify", "cat": "assinaturas", "valor": 3190, "dia": 28, "forma": "credito", "inicio": "2026-01", "card": "bb"}, {"id": "r5045", "desc": "Apple iCloud", "cat": "assinaturas", "valor": 1990, "dia": 3, "forma": "credito", "inicio": "2026-01", "card": "bb"}, {"id": "r5046", "desc": "Amazon Kindle", "cat": "online", "valor": 2490, "dia": 8, "forma": "credito", "inicio": "2026-01", "card": "bb"}], "lancs": [{"id": "g5001", "desc": "Shopee (pix no cartão)", "cat": "online", "valor": 3616, "data": "2026-09-04", "forma": "credito", "card": "bb"}, {"id": "g5002", "desc": "Juros + IOF do pix", "cat": "juros", "valor": 200, "data": "2026-09-04", "forma": "credito", "card": "bb"}, {"id": "g5003", "desc": "Cantim do Preto", "cat": "restaurante", "valor": 2666, "data": "2026-09-03", "forma": "credito", "card": "bb"}, {"id": "g5004", "desc": "Uber", "cat": "uber", "valor": 995, "data": "2026-08-31", "forma": "credito", "card": "bb"}, {"id": "g5005", "desc": "iFood", "cat": "delivery", "valor": 795, "data": "2026-08-30", "forma": "credito", "card": "bb"}, {"id": "g5006", "desc": "Mais Laser", "cat": "beleza", "valor": 5999, "data": "2026-08-30", "forma": "credito", "card": "bb"}, {"id": "g5007", "desc": "Supermercado Reis", "cat": "mercado", "valor": 5085, "data": "2026-08-29", "forma": "credito", "card": "bb"}, {"id": "g5008", "desc": "Capim Dourado", "cat": "restaurante", "valor": 2500, "data": "2026-08-29", "forma": "credito", "card": "bb"}, {"id": "g5009", "desc": "Mp*Duarte", "cat": "outros", "valor": 9000, "data": "2026-08-29", "forma": "credito", "card": "bb"}, {"id": "g5010", "desc": "Home B Salão", "cat": "beleza", "valor": 4500, "data": "2026-08-28", "forma": "credito", "card": "bb"}, {"id": "g5011", "desc": "Home B Salão", "cat": "beleza", "valor": 9000, "data": "2026-08-28", "forma": "credito", "card": "bb"}, {"id": "g5012", "desc": "Goiás Comércio de Cosméticos", "cat": "beleza", "valor": 9227, "data": "2026-08-28", "forma": "credito", "card": "bb"}, {"id": "g5013", "desc": "Atacadão 701 Flamboyant", "cat": "mercado", "valor": 10914, "data": "2026-08-28", "forma": "credito", "card": "bb"}, {"id": "g5014", "desc": "iFood — Vida Saudável", "cat": "delivery", "valor": 8751, "data": "2026-08-27", "forma": "credito", "card": "bb"}, {"id": "g5015", "desc": "Almoco", "cat": "restaurante", "valor": 4545, "data": "2026-09-04", "forma": "credito", "card": "bb"}, {"id": "g5016", "desc": "Açaí", "cat": "lanches", "valor": 5450, "data": "2026-09-04", "forma": "credito", "card": "bb"}, {"id": "g5017", "desc": "Bar", "cat": "bar", "valor": 8800, "data": "2026-09-04", "forma": "credito", "card": "bb"}, {"id": "g5018", "desc": "Jogo", "cat": "jogos", "valor": 700, "data": "2026-09-05", "forma": "credito", "card": "bb"}, {"id": "g5019", "desc": "Picole", "cat": "lanches", "valor": 3600, "data": "2026-09-06", "forma": "credito", "card": "bb"}, {"id": "g5020", "desc": "Bar", "cat": "bar", "valor": 3700, "data": "2026-09-06", "forma": "credito", "card": "bb"}, {"id": "g5021", "desc": "Diária smart", "cat": "academia", "valor": 5000, "data": "2026-09-07", "forma": "credito", "card": "bb"}, {"id": "g5022", "desc": "Cerveja", "cat": "bar", "valor": 7000, "data": "2026-09-08", "forma": "credito", "card": "bb"}, {"id": "g5023", "desc": "Gasolina", "cat": "combustivel", "valor": 10410, "data": "2026-09-08", "forma": "credito", "card": "bb"}, {"id": "g5024", "desc": "Pré treino", "cat": "academia", "valor": 800, "data": "2026-09-09", "forma": "credito", "card": "bb"}, {"id": "g5025", "desc": "Atacadao", "cat": "mercado", "valor": 23700, "data": "2026-09-10", "forma": "credito", "card": "bb"}, {"id": "g5026", "desc": "Salada", "cat": "restaurante", "valor": 2100, "data": "2026-09-09", "forma": "credito", "card": "bb"}, {"id": "g5027", "desc": "Doces", "cat": "lanches", "valor": 6000, "data": "2026-09-10", "forma": "credito", "card": "bb"}, {"id": "g5028", "desc": "Agua", "cat": "lanches", "valor": 800, "data": "2026-09-10", "forma": "credito", "card": "bb"}, {"id": "g5029", "desc": "Energético", "cat": "lanches", "valor": 5000, "data": "2026-09-11", "forma": "credito", "card": "bb"}, {"id": "g5030", "desc": "Piqui", "cat": "padaria", "valor": 6000, "data": "2026-09-12", "forma": "credito", "card": "bb"}, {"id": "g5031", "desc": "Brinquedo", "cat": "presentes", "valor": 800, "data": "2026-09-12", "forma": "credito", "card": "bb"}, {"id": "g5032", "desc": "Moreninha", "cat": "mercado", "valor": 7000, "data": "2026-09-13", "forma": "credito", "card": "mp"}, {"id": "g5033", "desc": "Padaria", "cat": "padaria", "valor": 6300, "data": "2026-09-14", "forma": "credito", "card": "bb"}, {"id": "g5034", "desc": "C&A", "cat": "roupas", "valor": 44994, "data": "2026-09-01", "forma": "credito", "card": "bb", "parcelas": 3, "primeiraFatura": "2026-09", "dataAprox": true}, {"id": "g5035", "desc": "Amazon", "cat": "online", "valor": 67492, "data": "2026-09-01", "forma": "credito", "card": "bb", "parcelas": 4, "primeiraFatura": "2026-08", "dataAprox": true}, {"id": "g5036", "desc": "Centauro", "cat": "roupas", "valor": 89992, "data": "2026-09-01", "forma": "credito", "card": "bb", "parcelas": 8, "primeiraFatura": "2026-07", "dataAprox": true}, {"id": "g5037", "desc": "Livraria Leiturinha", "cat": "educacao", "valor": 14990, "data": "2026-09-01", "forma": "credito", "card": "bb", "parcelas": 2, "primeiraFatura": "2026-09", "dataAprox": true}, {"id": "g5038", "desc": "Relógio (Mercado Livre)", "cat": "online", "valor": 74985, "data": "2026-09-01", "forma": "credito", "card": "mp", "parcelas": 15, "primeiraFatura": "2026-09", "dataAprox": true}, {"id": "g5039", "desc": "MP*MP transferência", "cat": "outros", "valor": 42600, "data": "2026-09-01", "forma": "credito", "card": "mp", "parcelas": 12, "primeiraFatura": "2026-09", "dataAprox": true}, {"id": "g5040", "desc": "Base", "cat": "outros", "valor": 40400, "data": "2026-09-01", "forma": "credito", "card": "mp", "parcelas": 10, "primeiraFatura": "2026-10", "dataAprox": true}, {"id": "g136726", "desc": "Gasolina", "cat": "combustivel", "valor": 3000, "data": "2026-09-18", "forma": "debito"}, {"id": "g426777", "desc": "Cerveja", "cat": "bar", "valor": 1600, "data": "2026-09-19", "forma": "credito", "card": "bb"}, {"id": "g945340", "desc": "Marmitas", "cat": "restaurante", "valor": 9100, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g945341", "desc": "Pix Nayane 22", "cat": "pix-outros", "valor": 2200, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g945343", "desc": "Água de coco", "cat": "lanches", "valor": 2000, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g653536", "desc": "Cervejas", "cat": "bar", "valor": 8700, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g716617", "desc": "Oferta igreja", "cat": "doacoes", "valor": 3300, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g143707", "desc": "Mercado", "cat": "mercado", "valor": 17600, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g143708", "desc": "Verduras", "cat": "padaria", "valor": 3000, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g143709", "desc": "Estacionamento", "cat": "estacionamento", "valor": 1500, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g226266", "desc": "VF golden perfume", "cat": "beleza", "valor": 10100, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g422665", "desc": "Oba", "cat": "mercado", "valor": 6100, "data": "2026-09-29", "forma": "credito", "card": "bb"}, {"id": "g348631", "desc": "Apostas loteria", "cat": "apostas", "valor": 4600, "data": "2026-09-29", "forma": "credito", "card": "bb"}, {"id": "g41562", "desc": "Agulhas", "cat": "beleza", "valor": 6100, "data": "2026-09-29", "forma": "credito", "card": "bb"}, {"id": "g932912", "desc": "Misto", "cat": "lanches", "valor": 4500, "data": "2026-09-30", "forma": "credito", "card": "bb"}, {"id": "g932913", "desc": "Depilação Nayane", "cat": "beleza", "valor": 6000, "data": "2026-09-30", "forma": "credito", "card": "bb"}, {"id": "g756451", "desc": "Barrinha", "cat": "bar", "valor": 1500, "data": "2026-09-30", "forma": "credito", "card": "bb"}, {"id": "g172172", "desc": "Shopee", "cat": "online", "valor": 3700, "data": "2026-10-03", "forma": "credito", "card": "bb"}, {"id": "g172173", "desc": "Uber nayane", "cat": "uber", "valor": 2600, "data": "2026-10-03", "forma": "credito", "card": "bb"}, {"id": "g172174", "desc": "Jogos", "cat": "jogos", "valor": 10700, "data": "2026-10-03", "forma": "credito", "card": "bb"}, {"id": "g344031", "desc": "Mercado", "cat": "mercado", "valor": 12800, "data": "2026-10-03", "forma": "credito", "card": "bb"}, {"id": "g344032", "desc": "Mercado", "cat": "mercado", "valor": 2200, "data": "2026-10-03", "forma": "credito", "card": "bb"}, {"id": "g165129", "desc": "Mercado", "cat": "mercado", "valor": 10100, "data": "2026-10-04", "forma": "credito", "card": "bb"}, {"id": "g165130", "desc": "Uber", "cat": "uber", "valor": 2500, "data": "2026-10-04", "forma": "credito", "card": "bb"}, {"id": "g158655", "desc": "Nugget mc", "cat": "lanches", "valor": 3000, "data": "2026-10-05", "forma": "pix"}, {"id": "f5047", "desc": "Empréstimo 1", "cat": "emprestimo", "valor": 1100000, "valorParcela": 110000, "parcelas": 10, "data": "2026-08-01", "forma": "boleto", "primeiroVenc": "2026-08-06", "obs": "boleto dia 6", "dataAprox": true}, {"id": "f5048", "desc": "Empréstimo 2", "cat": "emprestimo", "valor": 3999600, "valorParcela": 111100, "parcelas": 36, "data": "2026-10-01", "forma": "boleto", "primeiroVenc": "2026-10-19", "obs": "boleto dia 19 · começa em outubro", "dataAprox": true}, {"id": "f5049", "desc": "Cartão Renner", "cat": "emprestimo", "valor": 160280, "valorParcela": 40070, "parcelas": 4, "data": "2026-08-01", "forma": "boleto", "primeiroVenc": "2026-08-01", "obs": "fatura Renner · últimas 2 parcelas", "dataAprox": true}], "receitas": [{"id": "d2022a", "desc": "13º salário (1ª parcela)", "tipo": "13", "valor": 31250, "data": "2022-11-30"}, {"id": "d2022b", "desc": "13º salário (2ª parcela)", "tipo": "13", "valor": 26563, "data": "2022-12-20"}, {"id": "d2023a", "desc": "13º salário (1ª parcela)", "tipo": "13", "valor": 155000, "data": "2023-11-30"}, {"id": "d2023b", "desc": "13º salário (2ª parcela)", "tipo": "13", "valor": 124045, "data": "2023-12-20"}, {"id": "d2024a", "desc": "13º salário (1ª parcela)", "tipo": "13", "valor": 250000, "data": "2024-11-30"}, {"id": "d2024b", "desc": "13º salário (2ª parcela)", "tipo": "13", "valor": 250000, "data": "2024-12-20"}, {"id": "d2025a", "desc": "13º salário (1ª parcela)", "tipo": "13", "valor": 250000, "data": "2025-11-30"}, {"id": "d2025b", "desc": "13º salário (2ª parcela)", "tipo": "13", "valor": 250000, "data": "2025-12-20"}], "metas": [{"id": "p5051", "nome": "Casal", "ic": "🐷", "meta": 0, "inicial": 134000, "plano": 25000, "dia": 5}, {"id": "p5052", "nome": "Escritório", "ic": "🐷", "meta": 0, "inicial": 137703, "plano": 25000, "dia": 5}], "movs": [], "pagos": ["fat:bb:2026-10", "fat:mp:2026-10", "lanc:f5047:2026-10", "lanc:f5048:2026-10", "lanc:f5049:2026-10"], "livres": [{"id": "l5053", "nome": "Empréstimo Viena", "saldo": 200000, "obs": "pix · sem parcela fixa"}]};
+const SEED={"config": {"teto": 270000, "inicio": "2026-09", "saldoInicial": 0, "levarSobra": true, "salarioDia": 5}, "salarios": [{"de": "2026-10", "valor": 580000}], "salHist": {"2022-09": 38542, "2022-10": 226198, "2022-11": 226198, "2023-01": 226198, "2023-02": 226524, "2023-03": 226524, "2023-04": 226524, "2023-05": 226524, "2023-06": 228109, "2023-07": 329045, "2023-08": 329045, "2023-09": 329045, "2023-10": 329045, "2023-11": 329045, "2023-12": 329045, "2024-01": 329469, "2024-02": 188934, "2024-03": 778976, "2024-04": 213400, "2024-05": 473307, "2024-06": 484468, "2024-07": 484468, "2024-08": 484468, "2024-09": 484468, "2024-10": 484468, "2024-11": 334468, "2024-12": 484468, "2025-01": 483302, "2025-02": 483302, "2025-03": 483302, "2025-04": 483302, "2025-05": 403302, "2025-06": 483302, "2025-07": 483302, "2025-08": 483302, "2025-09": 483302, "2025-10": 483302, "2025-11": 483302, "2025-12": 533903, "2026-01": 533903, "2026-02": 733903, "2026-03": 533903, "2026-04": 541679, "2026-05": 541679, "2026-06": 616140, "2026-07": 599848}, "cats": [{"id": "mercado", "nome": "Mercado", "ic": "🛒", "grupo": "nec"}, {"id": "padaria", "nome": "Padaria e feira", "ic": "🥖", "grupo": "nec"}, {"id": "restaurante", "nome": "Restaurante", "ic": "🍽️", "grupo": "des"}, {"id": "delivery", "nome": "Delivery", "ic": "🛵", "grupo": "des"}, {"id": "bar", "nome": "Bar e bebidas", "ic": "🍺", "grupo": "des"}, {"id": "lanches", "nome": "Lanches e doces", "ic": "🍦", "grupo": "des"}, {"id": "uber", "nome": "Uber e táxi", "ic": "🚕", "grupo": "nec"}, {"id": "combustivel", "nome": "Combustível", "ic": "⛽", "grupo": "nec"}, {"id": "estacionamento", "nome": "Estacionamento", "ic": "🅿️", "grupo": "nec"}, {"id": "academia", "nome": "Academia e esporte", "ic": "💪", "grupo": "nec"}, {"id": "saude", "nome": "Saúde e farmácia", "ic": "💊", "grupo": "nec"}, {"id": "beleza", "nome": "Beleza e cuidados", "ic": "💅", "grupo": "des"}, {"id": "roupas", "nome": "Roupas e calçados", "ic": "👕", "grupo": "des"}, {"id": "casa", "nome": "Casa e utilidades", "ic": "🏠", "grupo": "nec"}, {"id": "online", "nome": "Compras online", "ic": "📦", "grupo": "des"}, {"id": "assinaturas", "nome": "Assinaturas", "ic": "📺", "grupo": "des"}, {"id": "telefone", "nome": "Telefone e internet", "ic": "📱", "grupo": "nec"}, {"id": "moradia", "nome": "Moradia", "ic": "🔑", "grupo": "nec"}, {"id": "lazer", "nome": "Lazer e passeios", "ic": "🎬", "grupo": "des"}, {"id": "jogos", "nome": "Jogos", "ic": "🎮", "grupo": "des"}, {"id": "apostas", "nome": "Apostas", "ic": "🎲", "grupo": "des"}, {"id": "presentes", "nome": "Presentes", "ic": "🎁", "grupo": "des"}, {"id": "doacoes", "nome": "Igreja e doações", "ic": "⛪", "grupo": "des"}, {"id": "pix-outros", "nome": "Pix para outros", "ic": "🤝", "grupo": "des"}, {"id": "educacao", "nome": "Educação e livros", "ic": "📚", "grupo": "nec"}, {"id": "pets", "nome": "Pets", "ic": "🐾", "grupo": "nec"}, {"id": "viagem", "nome": "Viagens", "ic": "✈️", "grupo": "des"}, {"id": "emprestimo", "nome": "Empréstimos", "ic": "🏦", "grupo": "div"}, {"id": "juros", "nome": "Juros e tarifas", "ic": "🧾", "grupo": "div"}, {"id": "outros", "nome": "A definir", "ic": "❔", "grupo": "des"}], "cards": [{"id": "bb", "nome": "Cartão BB", "tom": "lilac", "limite": 0, "fecha": 26, "vence": 8, "fechaNaAtual": true}, {"id": "mp", "nome": "Mercado Pago", "tom": "mint", "limite": 0, "fecha": 2, "vence": 7, "fechaNaAtual": true}], "recs": [{"id": "r5041", "desc": "Academia WEGYM", "cat": "academia", "valor": 25900, "dia": 28, "forma": "credito", "inicio": "2026-01", "card": "bb"}, {"id": "r5042", "desc": "Vivo", "cat": "telefone", "valor": 9000, "dia": 6, "forma": "credito", "inicio": "2026-01", "card": "bb"}, {"id": "r5043", "desc": "YouTube Premium", "cat": "assinaturas", "valor": 6990, "dia": 5, "forma": "credito", "inicio": "2026-01", "card": "bb"}, {"id": "r5044", "desc": "Spotify", "cat": "assinaturas", "valor": 3190, "dia": 28, "forma": "credito", "inicio": "2026-01", "card": "bb"}, {"id": "r5045", "desc": "Apple iCloud", "cat": "assinaturas", "valor": 1990, "dia": 3, "forma": "credito", "inicio": "2026-01", "card": "bb"}, {"id": "r5046", "desc": "Amazon Kindle", "cat": "online", "valor": 2490, "dia": 8, "forma": "credito", "inicio": "2026-01", "card": "bb"}], "lancs": [{"id": "g5001", "desc": "Shopee (pix no cartão)", "cat": "online", "valor": 3616, "data": "2026-09-04", "forma": "credito", "card": "bb"}, {"id": "g5002", "desc": "Juros + IOF do pix", "cat": "juros", "valor": 200, "data": "2026-09-04", "forma": "credito", "card": "bb"}, {"id": "g5003", "desc": "Cantim do Preto", "cat": "restaurante", "valor": 2666, "data": "2026-09-03", "forma": "credito", "card": "bb"}, {"id": "g5004", "desc": "Uber", "cat": "uber", "valor": 995, "data": "2026-08-31", "forma": "credito", "card": "bb"}, {"id": "g5005", "desc": "iFood", "cat": "delivery", "valor": 795, "data": "2026-08-30", "forma": "credito", "card": "bb"}, {"id": "g5006", "desc": "Mais Laser", "cat": "beleza", "valor": 5999, "data": "2026-08-30", "forma": "credito", "card": "bb"}, {"id": "g5007", "desc": "Supermercado Reis", "cat": "mercado", "valor": 5085, "data": "2026-08-29", "forma": "credito", "card": "bb"}, {"id": "g5008", "desc": "Capim Dourado", "cat": "restaurante", "valor": 2500, "data": "2026-08-29", "forma": "credito", "card": "bb"}, {"id": "g5009", "desc": "Mp*Duarte", "cat": "outros", "valor": 9000, "data": "2026-08-29", "forma": "credito", "card": "bb"}, {"id": "g5010", "desc": "Home B Salão", "cat": "beleza", "valor": 4500, "data": "2026-08-28", "forma": "credito", "card": "bb"}, {"id": "g5011", "desc": "Home B Salão", "cat": "beleza", "valor": 9000, "data": "2026-08-28", "forma": "credito", "card": "bb"}, {"id": "g5012", "desc": "Goiás Comércio de Cosméticos", "cat": "beleza", "valor": 9227, "data": "2026-08-28", "forma": "credito", "card": "bb"}, {"id": "g5013", "desc": "Atacadão 701 Flamboyant", "cat": "mercado", "valor": 10914, "data": "2026-08-28", "forma": "credito", "card": "bb"}, {"id": "g5014", "desc": "iFood — Vida Saudável", "cat": "delivery", "valor": 8751, "data": "2026-08-27", "forma": "credito", "card": "bb"}, {"id": "g5015", "desc": "Almoco", "cat": "restaurante", "valor": 4545, "data": "2026-09-04", "forma": "credito", "card": "bb"}, {"id": "g5016", "desc": "Açaí", "cat": "lanches", "valor": 5450, "data": "2026-09-04", "forma": "credito", "card": "bb"}, {"id": "g5017", "desc": "Bar", "cat": "bar", "valor": 8800, "data": "2026-09-04", "forma": "credito", "card": "bb"}, {"id": "g5018", "desc": "Jogo", "cat": "jogos", "valor": 700, "data": "2026-09-05", "forma": "credito", "card": "bb"}, {"id": "g5019", "desc": "Picole", "cat": "lanches", "valor": 3600, "data": "2026-09-06", "forma": "credito", "card": "bb"}, {"id": "g5020", "desc": "Bar", "cat": "bar", "valor": 3700, "data": "2026-09-06", "forma": "credito", "card": "bb"}, {"id": "g5021", "desc": "Diária smart", "cat": "academia", "valor": 5000, "data": "2026-09-07", "forma": "credito", "card": "bb"}, {"id": "g5022", "desc": "Cerveja", "cat": "bar", "valor": 7000, "data": "2026-09-08", "forma": "credito", "card": "bb"}, {"id": "g5023", "desc": "Gasolina", "cat": "combustivel", "valor": 10410, "data": "2026-09-08", "forma": "credito", "card": "bb"}, {"id": "g5024", "desc": "Pré treino", "cat": "academia", "valor": 800, "data": "2026-09-09", "forma": "credito", "card": "bb"}, {"id": "g5025", "desc": "Atacadao", "cat": "mercado", "valor": 23700, "data": "2026-09-10", "forma": "credito", "card": "bb"}, {"id": "g5026", "desc": "Salada", "cat": "restaurante", "valor": 2100, "data": "2026-09-09", "forma": "credito", "card": "bb"}, {"id": "g5027", "desc": "Doces", "cat": "lanches", "valor": 6000, "data": "2026-09-10", "forma": "credito", "card": "bb"}, {"id": "g5028", "desc": "Agua", "cat": "lanches", "valor": 800, "data": "2026-09-10", "forma": "credito", "card": "bb"}, {"id": "g5029", "desc": "Energético", "cat": "lanches", "valor": 5000, "data": "2026-09-11", "forma": "credito", "card": "bb"}, {"id": "g5030", "desc": "Piqui", "cat": "padaria", "valor": 6000, "data": "2026-09-12", "forma": "credito", "card": "bb"}, {"id": "g5031", "desc": "Brinquedo", "cat": "presentes", "valor": 800, "data": "2026-09-12", "forma": "credito", "card": "bb"}, {"id": "g5032", "desc": "Moreninha", "cat": "mercado", "valor": 7000, "data": "2026-09-13", "forma": "credito", "card": "mp"}, {"id": "g5033", "desc": "Padaria", "cat": "padaria", "valor": 6300, "data": "2026-09-14", "forma": "credito", "card": "bb"}, {"id": "g5034", "desc": "C&A", "cat": "roupas", "valor": 44994, "data": "2026-09-01", "forma": "credito", "card": "bb", "parcelas": 3, "primeiraFatura": "2026-09", "dataAprox": true}, {"id": "g5035", "desc": "Amazon", "cat": "online", "valor": 67492, "data": "2026-09-01", "forma": "credito", "card": "bb", "parcelas": 4, "primeiraFatura": "2026-08", "dataAprox": true}, {"id": "g5036", "desc": "Centauro", "cat": "roupas", "valor": 89992, "data": "2026-09-01", "forma": "credito", "card": "bb", "parcelas": 8, "primeiraFatura": "2026-07", "dataAprox": true}, {"id": "g5037", "desc": "Livraria Leiturinha", "cat": "educacao", "valor": 14990, "data": "2026-09-01", "forma": "credito", "card": "bb", "parcelas": 2, "primeiraFatura": "2026-09", "dataAprox": true}, {"id": "g5038", "desc": "Relógio (Mercado Livre)", "cat": "online", "valor": 74985, "data": "2026-09-01", "forma": "credito", "card": "mp", "parcelas": 15, "primeiraFatura": "2026-09", "dataAprox": true}, {"id": "g5039", "desc": "MP*MP transferência", "cat": "outros", "valor": 42600, "data": "2026-09-01", "forma": "credito", "card": "mp", "parcelas": 12, "primeiraFatura": "2026-09", "dataAprox": true}, {"id": "g5040", "desc": "Base", "cat": "outros", "valor": 40400, "data": "2026-09-01", "forma": "credito", "card": "mp", "parcelas": 10, "primeiraFatura": "2026-10", "dataAprox": true}, {"id": "g136726", "desc": "Gasolina", "cat": "combustivel", "valor": 3000, "data": "2026-09-18", "forma": "debito"}, {"id": "g426777", "desc": "Cerveja", "cat": "bar", "valor": 1600, "data": "2026-09-19", "forma": "credito", "card": "bb"}, {"id": "g945340", "desc": "Marmitas", "cat": "restaurante", "valor": 9100, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g945341", "desc": "Pix Nayane 22", "cat": "pix-outros", "valor": 2200, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g945343", "desc": "Água de coco", "cat": "lanches", "valor": 2000, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g653536", "desc": "Cervejas", "cat": "bar", "valor": 8700, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g716617", "desc": "Oferta igreja", "cat": "doacoes", "valor": 3300, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g143707", "desc": "Mercado", "cat": "mercado", "valor": 17600, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g143708", "desc": "Verduras", "cat": "padaria", "valor": 3000, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g143709", "desc": "Estacionamento", "cat": "estacionamento", "valor": 1500, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g226266", "desc": "VF golden perfume", "cat": "beleza", "valor": 10100, "data": "2026-09-28", "forma": "credito", "card": "bb"}, {"id": "g422665", "desc": "Oba", "cat": "mercado", "valor": 6100, "data": "2026-09-29", "forma": "credito", "card": "bb"}, {"id": "g348631", "desc": "Apostas loteria", "cat": "apostas", "valor": 4600, "data": "2026-09-29", "forma": "credito", "card": "bb"}, {"id": "g41562", "desc": "Agulhas", "cat": "beleza", "valor": 6100, "data": "2026-09-29", "forma": "credito", "card": "bb"}, {"id": "g932912", "desc": "Misto", "cat": "lanches", "valor": 4500, "data": "2026-09-30", "forma": "credito", "card": "bb"}, {"id": "g932913", "desc": "Depilação Nayane", "cat": "beleza", "valor": 6000, "data": "2026-09-30", "forma": "credito", "card": "bb"}, {"id": "g756451", "desc": "Barrinha", "cat": "bar", "valor": 1500, "data": "2026-09-30", "forma": "credito", "card": "bb"}, {"id": "g172172", "desc": "Shopee", "cat": "online", "valor": 3700, "data": "2026-10-03", "forma": "credito", "card": "bb"}, {"id": "g172173", "desc": "Uber nayane", "cat": "uber", "valor": 2600, "data": "2026-10-03", "forma": "credito", "card": "bb"}, {"id": "g172174", "desc": "Jogos", "cat": "jogos", "valor": 10700, "data": "2026-10-03", "forma": "credito", "card": "bb"}, {"id": "g344031", "desc": "Mercado", "cat": "mercado", "valor": 12800, "data": "2026-10-03", "forma": "credito", "card": "bb"}, {"id": "g344032", "desc": "Mercado", "cat": "mercado", "valor": 2200, "data": "2026-10-03", "forma": "credito", "card": "bb"}, {"id": "g165129", "desc": "Mercado", "cat": "mercado", "valor": 10100, "data": "2026-10-04", "forma": "credito", "card": "bb"}, {"id": "g165130", "desc": "Uber", "cat": "uber", "valor": 2500, "data": "2026-10-04", "forma": "credito", "card": "bb"}, {"id": "g158655", "desc": "Nugget mc", "cat": "lanches", "valor": 3000, "data": "2026-10-05", "forma": "pix"}, {"id": "f5047", "desc": "Empréstimo 1", "cat": "emprestimo", "valor": 1100000, "valorParcela": 110000, "parcelas": 10, "data": "2026-08-01", "forma": "boleto", "primeiroVenc": "2026-08-06", "obs": "boleto dia 6", "dataAprox": true}, {"id": "f5048", "desc": "Empréstimo 2", "cat": "emprestimo", "valor": 3999600, "valorParcela": 111100, "parcelas": 36, "data": "2026-10-01", "forma": "boleto", "primeiroVenc": "2026-10-19", "obs": "boleto dia 19 · começa em outubro", "dataAprox": true}, {"id": "f5049", "desc": "Cartão Renner", "cat": "emprestimo", "valor": 160280, "valorParcela": 40070, "parcelas": 4, "data": "2026-08-01", "forma": "boleto", "primeiroVenc": "2026-08-01", "obs": "fatura Renner · últimas 2 parcelas", "dataAprox": true}], "receitas": [{"id": "d2022a", "desc": "13º salário (1ª parcela)", "tipo": "13", "valor": 31250, "data": "2022-11-30"}, {"id": "d2022b", "desc": "13º salário (2ª parcela)", "tipo": "13", "valor": 26563, "data": "2022-12-20"}, {"id": "d2023a", "desc": "13º salário (1ª parcela)", "tipo": "13", "valor": 155000, "data": "2023-11-30"}, {"id": "d2023b", "desc": "13º salário (2ª parcela)", "tipo": "13", "valor": 124045, "data": "2023-12-20"}, {"id": "d2024a", "desc": "13º salário (1ª parcela)", "tipo": "13", "valor": 250000, "data": "2024-11-30"}, {"id": "d2024b", "desc": "13º salário (2ª parcela)", "tipo": "13", "valor": 250000, "data": "2024-12-20"}, {"id": "d2025a", "desc": "13º salário (1ª parcela)", "tipo": "13", "valor": 250000, "data": "2025-11-30"}, {"id": "d2025b", "desc": "13º salário (2ª parcela)", "tipo": "13", "valor": 250000, "data": "2025-12-20"}], "metas": [{"id": "p5051", "nome": "Casal", "ic": "🐷", "meta": 0, "inicial": 134000, "plano": 25000, "dia": 5}, {"id": "p5052", "nome": "Escritório", "ic": "🐷", "meta": 0, "inicial": 137703, "plano": 25000, "dia": 5}], "movs": [], "pagos": ["fat:bb:2026-10", "fat:mp:2026-10", "lanc:f5047:2026-10", "lanc:f5048:2026-10", "lanc:f5049:2026-10"], "livres": [{"id": "l5053", "nome": "Empréstimo Viena", "saldo": 200000, "obs": "pix · sem parcela fixa"}]};
 const TIPOS_REC={salario:'Salário','13':'13º',ferias:'Férias',bonus:'Bônus',comissao:'Comissão',extra:'Horas extras',outra:'Outra receita'};
 const FORMAS={pix:'Pix',debito:'Débito',dinheiro:'Dinheiro',credito:'Crédito',boleto:'Boleto parcelado'};
 
@@ -391,14 +422,18 @@ const FORMAS={pix:'Pix',debito:'Débito',dinheiro:'Dinheiro',credito:'Crédito',
    ========================================================== */
 const FIREBASE={apiKey:"AIzaSyC966WazsmQV2qwAAWorZk0Dcz9ePGtIJI",authDomain:"isabelle-financas.firebaseapp.com",databaseURL:"https://isabelle-financas-default-rtdb.firebaseio.com",projectId:"isabelle-financas"};
 const SALA="financas/meudinheiro-5b8e31c2d9f4";   // gaveta do MeuDinheiro — NÃO MUDAR
-const VERSAO='1.0', CHAVE='meudinheiro-v1';
+const VERSAO='1.1', CHAVE='meudinheiro-v1';
+const ATUALIZACOES=[
+  {v:'1.1',data:'05/10/2026',itens:['Nova aba Recorrentes: assinaturas e contas fixas num só lugar, com total por mês, próximas cobranças, cancelar e reativar.','A versão do app aparece pequena no topo da tela. Toque nela para ver as novidades.','Configurações mais limpas: cartões, teto e salário ficam em "Ajustes do app", recolhidos.','Salário passou para o menu Mais.','Cada mês mostra os gastos feitos nele, seja no cartão, no Pix, no débito ou em dinheiro, junto com as dívidas e poupanças, e a sobra do mês.','Cada mês começa do zero: o app não puxa mais saldo do mês anterior. O que entrou, saiu e sobrou em cada mês fica em Mais › Relatórios.','Na Início, "De onde vem esse número" virou "A pagar": A pagar, Pago e Falta, cada fatura, cada dívida e cada poupança pelo dia, um toque para marcar como paga, e quanto entra e sobra.']},
+  {v:'1.0',data:'05/10/2026',itens:['Primeira versão do MeuDinheiro, com os dados do backup de 05/10.']}
+];
 function normaliza(v){const b=JSON.parse(JSON.stringify(SEED));b.atualizadoEm=0;if(!v||typeof v!=='object')return b;
-  const r=Object.assign(b,v);['cats','cards','recs','lancs','receitas','metas','movs','pagos','livres','salarios'].forEach(k=>{if(!Array.isArray(r[k]))r[k]=Array.isArray(b[k])?b[k]:[]});
-  r.salHist=r.salHist||{};r.config=Object.assign({},b.config,v.config||{});return r}
+  const r=Object.assign(b,v);['cats','cards','recs','lancs','receitas','metas','movs','pagos','abertos','livres','salarios'].forEach(k=>{if(!Array.isArray(r[k]))r[k]=Array.isArray(b[k])?b[k]:[]});
+  r.salHist=r.salHist||{};r.config=Object.assign({},b.config,v.config||{});if(r.config.inicio==='2026-10')r.config.inicio='2026-09';return r}
 let S=(()=>{try{const t=localStorage.getItem(CHAVE);if(t)return normaliza(JSON.parse(t))}catch(e){}return normaliza(null)})();
 let fbRef=null,timer=null,ignorar=false,pendente=false,ultimo=JSON.stringify(S),estado='local';
 const SELOS={local:['','Salvo no aparelho'],con:['con','Conectando…'],salvando:['con','Salvando…'],on:['on','Salvo na nuvem'],off:['off','Sem internet · salvo no aparelho'],erro:['off','Falha ao sincronizar']};
-function marcar(e){estado=e;const el=document.getElementById('sync');if(!el)return;const x=SELOS[e]||SELOS.local;el.className='sync '+x[0];el.lastElementChild.textContent=x[1]}
+function marcar(e){estado=e;const el=document.getElementById('sync');if(!el)return;const x=SELOS[e]||SELOS.local;el.className='ver '+x[0];el.title=x[1]}
 function gravarLocal(){try{localStorage.setItem(CHAVE,JSON.stringify(S))}catch(e){}}
 function salvar(){S.atualizadoEm=Date.now();S.versao=VERSAO;ultimo=JSON.stringify(S);gravarLocal();if(!fbRef){pendente=true;return}pendente=true;marcar('salvando');clearTimeout(timer);timer=setTimeout(enviar,500)}
 function enviar(){if(!fbRef)return;ignorar=true;fbRef.set(JSON.parse(JSON.stringify(S))).then(()=>{pendente=false;marcar('on')}).catch(()=>{ignorar=false;marcar('off')})}
@@ -467,10 +502,11 @@ function buildItems(){
     for(let v=START();v<=end;v++){const d=dateIn(v,m.dia||S.config.salarioDia+1);
       out.push({ym:v,date:d,valor:m.plano,kind:'reserva',meta:m.id,desc:'Aporte mensal · '+m.nome,plan:true,status:d<=TODAY?'pago':'previsto'});}}
   for(const mv of S.movs) out.push({ym:ym(mv.data),date:mv.data,valor:mv.valor,kind:'reserva',meta:mv.meta,desc:mv.desc,id:mv.id,status:mv.data<=TODAY?'pago':'previsto'});
+  out.forEach(x=>{x.mm=x.ym;if(x.kind!=='avista')x.ym=x.mm-1});   /* ym = mês do gasto; mm = mês em que o dinheiro sai */
   return out;
 }
-function recompute(){const P=new Set(S.pagos||[]);ITEMS=buildItems().map(x=>{
-  if(x.status!=='pago'&&((x.kind==='cartao'&&P.has(`fat:${x.card}:${ymKey(x.ym)}`))||(x.lanc&&P.has(`lanc:${x.lanc}:${ymKey(x.ym)}`))))x.status='pago';return x});MEMO={}}
+function recompute(){const P=new Set(S.pagos||[]),A=new Set(S.abertos||[]);ITEMS=buildItems().map(x=>{
+  const k=x.kind==='cartao'?`fat:${x.card}:${ymKey(x.mm)}`:x.lanc?`lanc:${x.lanc}:${ymKey(x.mm)}`:x.rec?`rec:${x.rec}:${ymKey(x.mm)}`:null;if(k&&P.has(k))x.status='pago';if(k&&A.has(k))x.status='previsto';return x});MEMO={}}
 
 const OUT_KINDS=['cartao','conta','divida','avista'];
 /* Teto do cartão: tudo que vence no cartão no mês v — compras, parcelas e assinaturas */
@@ -485,7 +521,7 @@ function resumo(v){
   const r={v,items:it,
     salario:sum(rec.filter(x=>x.tipo==='salario')), extras:sum(rec.filter(x=>x.tipo!=='salario')),
     entradas:sum(rec), entradasRecebidas:sum(rec.filter(x=>x.status==='pago')),
-    cartoes:S.cards.map(c=>{const a=it.filter(x=>x.kind==='cartao'&&x.card===c.id);return {card:c,valor:sum(a),pago:a.length&&a.every(x=>x.status==='pago'),venc:dateIn(v,c.vence),itens:a}}),
+    cartoes:S.cards.map(c=>{const a=it.filter(x=>x.kind==='cartao'&&x.card===c.id);return {card:c,valor:sum(a),pago:a.length&&a.every(x=>x.status==='pago'),venc:dateIn(v+1,c.vence),itens:a}}),
     contas:sum(it.filter(x=>x.kind==='conta')), dividas:sum(it.filter(x=>x.kind==='divida')),
     avista:sum(it.filter(x=>x.kind==='avista')), reserva:sum(it.filter(x=>x.kind==='reserva'))
   };
@@ -494,8 +530,8 @@ function resumo(v){
   const outs=it.filter(x=>OUT_KINDS.includes(x.kind)||x.kind==='reserva');
   r.jaSaiu=sum(outs.filter(x=>x.status==='pago')); r.vaiSair=sum(outs.filter(x=>x.status!=='pago'));
   /* Sobra só passa adiante de meses que já aconteceram (ou do mês atual). Sobra projetada de um mês futuro ainda vai ser usada no dia a dia dele. */
-  r.sobraAnt = v===START()? S.config.saldoInicial : (S.config.levarSobra&&v>START()&&v-1<=TODAY_YM? resumo(v-1).livre : 0);
-  r.sobraPendente = S.config.levarSobra && v-1>TODAY_YM;
+  r.sobraAnt = 0;   /* cada mês começa do zero: não puxa saldo do mês anterior */
+  r.sobraPendente = false;
   r.livre=r.sobraAnt+r.entradas-r.saidas-r.reserva;
   MEMO[v]=r; return r;
 }
@@ -504,6 +540,7 @@ function resumo(v){
 /* ---------- utilidades de UI ---------- */
 const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
 const fmt=c=>BRL.format(c/100);
+const n0=c=>Math.round(c/100).toLocaleString('pt-BR');
 const fmt0=c=>'R$ '+Math.round(c/100).toLocaleString('pt-BR');
 const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 function parseBRL(s){s=String(s||'').replace(/[^\d,.-]/g,'');if(!s)return 0;if(s.includes(',')){s=s.replace(/\./g,'').replace(',','.')}return Math.round(parseFloat(s)*100)||0}
@@ -516,16 +553,17 @@ const TABS=[
   {id:'inicio',nome:'Início',svg:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>'},
   {id:'gastos',nome:'Gastos',svg:'<path d="M4 7h16M4 12h16M4 17h10"/>'},
   {id:'cartoes',nome:'Cartões',svg:'<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h4"/>'},
-  {id:'salario',nome:'Salário',svg:'<path d="M12 3v18M17 7.5c0-1.9-2.2-3-5-3s-5 1.1-5 3 2 2.6 5 3.2 5 1.4 5 3.3-2.2 3-5 3-5-1.1-5-3"/>'},
+  {id:'recorrentes',nome:'Recorrentes',svg:'<path d="M4 12a8 8 0 0 1 13.7-5.6L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15"/><path d="M4 20v-5h5"/>'},
   {id:'mais',nome:'Mais',svg:'<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>'}
 ];
 const MAIS=[
+  {id:'salario',nome:'Salário',ic:'💵',d:'Salário mês a mês, 13º e outras receitas'},
   {id:'dividas',nome:'Dívidas',ic:'📉',d:'Parcelamentos e empréstimos, quanto falta e quando acaba'},
   {id:'reservas',nome:'Reservas',ic:'🐷',d:'Metas e dinheiro guardado'},
-  {id:'relatorios',nome:'Relatórios',ic:'📊',d:'Evolução mês a mês'},
+  {id:'relatorios',nome:'Relatórios',ic:'📊',d:'O que entrou, saiu e sobrou em cada mês'},
   {id:'disciplina',nome:'Disciplina',ic:'🧭',d:'Seu 50/30/20 real'},
   {id:'simulador',nome:'Posso comprar?',ic:'🧮',d:'Teste uma compra antes de fazer'},
-  {id:'config',nome:'Configurações',ic:'⚙️',d:'Cartões, salário e regras'}
+  {id:'config',nome:'Configurações',ic:'⚙️',d:'Categorias, backup e novidades'}
 ];
 
 function monthBar(){
@@ -571,23 +609,11 @@ function viewInicio(){
     </div>
   </section>
 
-  <details class="card fold" id="foldConta"><summary><h2>De onde vem esse número</h2><span class="chev" aria-hidden="true">⌄</span></summary>
-    <div class="ledger" style="margin-top:6px">
-      ${r.sobraAnt?line('+',UI.v===START()?'Saldo inicial':`Sobrou de ${mesNome(UI.v-1)}`,'',r.sobraAnt):''}
-      ${line('+','Salário',salSt?(salSt.status==='pago'?`Recebido em ${ddmm(salSt.date)}`:`Previsto para ${ddmm(salSt.date)}`):'',r.salario)}
-      ${r.extras?line('+','Outras receitas',r.items.filter(x=>x.kind==='receita'&&x.tipo!=='salario').map(x=>esc(x.desc)).join(', '),r.extras):''}
-      ${line('−','Faturas de cartão','Compras do ciclo anterior, que vencem este mês',r.cartao,cardLines?`<div class="sub">${cardLines}</div>`:'')}
-      ${line('−','Contas fixas','Aluguel, energia, internet…',r.contas)}
-      ${r.dividas?line('−','Parcelas de boleto','Dentista, empréstimo…',r.dividas):''}
-      ${line('−','Pix, débito e dinheiro','Saiu na hora',r.avista)}
-      ${line('−','Guardado na reserva','Não é gasto, mas sai do disponível',r.reserva)}
-      <div class="lrow total"><div class="sign">=</div><div class="lbl"><div class="t">${r.livre<0?'Falta':'Livre'}</div></div><div class="v num" style="color:${r.livre<0?'var(--danger)':'var(--mint)'}">${fmt(r.livre)}</div></div>
-    </div>
-  </details>
+  ${aPagar(r)}
 
-  ${(()=>{const ca=cicloAberto(), t=tetoMes(ca.alvo), over=t.teto&&t.uso>t.teto, pct=t.teto?Math.min(100,t.uso/t.teto*100):0;
+  ${(()=>{const ca=cicloAberto(), t=tetoMes(ca.alvo-1), over=t.teto&&t.uso>t.teto, pct=t.teto?Math.min(100,t.uso/t.teto*100):0;
   return `<section class="card stack" style="gap:12px">
-    <div><div class="eyebrow">Ciclo aberto · paga com o salário de ${mesNome(ca.alvo)}</div><h2 style="margin-top:4px">O que você gasta agora no cartão</h2>
+    <div><div class="eyebrow">Cartão · ciclo aberto</div><h2 style="margin-top:4px">O que você gasta agora no cartão</h2>
     <div class="small muted" style="margin-top:2px">${ca.cards.map(a=>`${esc(a.c.nome)} fechou ${ddmm(dateIn(a.f.close-1,a.c.fecha))}`).join(' · ')}</div></div>
     ${t.teto?`<div class="flat stack" style="gap:8px">
       <div class="row between"><span class="small muted">Teto do cartão</span><b class="num">${fmt(t.uso)} <span class="muted" style="font-weight:500">de ${fmt(t.teto)}</span></b></div>
@@ -596,8 +622,8 @@ function viewInicio(){
     </div>`:''}
     ${abertas.map(a=>`<button class="item" data-act="irCartao" data-id="${a.c.id}" style="grid-template-columns:1fr auto">
       <div class="main"><div class="t" style="white-space:normal">${esc(a.c.nome)} · <span class="num">${fmt(a.valor)}</span></div><div class="d">Fecha ${ddmm(dateIn(a.f.close,a.c.fecha))} e vence ${ddmm(dateIn(a.f.venc,a.c.vence))}</div></div>
-      <div class="r"><span class="pill p-aberta">salário de ${mesNome(a.f.venc)}</span></div></button>`).join('')}
-    <div class="note small">Tudo o que você passa no cartão desde o fechamento vai ser pago com o salário de ${mesNome(ca.alvo)}. ${mesNome(TODAY_YM).replace(/^./,m=>m.toUpperCase())} não muda.</div>
+      <div class="r"><span class="pill p-aberta">entra em ${mesNome(a.f.venc-1)}</span></div></button>`).join('')}
+    <div class="note small">Tudo o que você passar no cartão até o fechamento entra nos gastos de ${mesNome(ca.alvo-1)}.</div>
   </section>`})()}
 
   <section class="card"><div class="sec-h" style="margin:0 0 8px"><h2>Livre nos próximos meses</h2><span class="small muted">já descontado o que está comprometido</span></div>
@@ -606,6 +632,56 @@ function viewInicio(){
 
   <section class="card"><div class="sec-h" style="margin:0 0 4px"><h2>Últimos lançamentos</h2><button class="link" data-act="tab" data-t="gastos">Ver todos</button></div>
     <div class="items">${ult.map(itemLanc).join('')}</div></section>`;
+}
+
+/* A pagar do mês: cada fatura, cada dívida e cada conta fora do cartão, separadas */
+function linhasAPagar(r){
+  const v=r.v, L=[];
+  r.cartoes.filter(c=>c.valor).forEach(c=>L.push({tipo:'fatura',key:`fat:${c.card.id}:${ymKey(v+1)}`,nome:`Fatura ${c.card.nome}`,sub:`${c.itens.length} lançamentos`,ic:'💳',date:c.venc,valor:c.valor,pago:c.pago,act:`data-act="abrirFatura" data-card="${c.card.id}" data-v="${v}"`}));
+  const div={};r.items.filter(x=>x.kind==='divida').forEach(x=>{(div[x.lanc]=div[x.lanc]||[]).push(x)});
+  Object.values(div).forEach(a=>{const x=a[0];L.push({tipo:'divida',key:`lanc:${x.lanc}:${ymKey(v+1)}`,nome:x.desc,sub:`parcela ${x.i} de ${x.n}`,ic:catOf(x.cat).ic,date:x.date,valor:a.reduce((s,y)=>s+y.valor,0),pago:a.every(y=>y.status==='pago'),act:`data-act="verLanc" data-id="${x.lanc}"`})});
+  r.items.filter(x=>x.kind==='conta').forEach(x=>L.push({tipo:'conta',key:`rec:${x.rec}:${ymKey(v+1)}`,nome:x.desc,sub:FORMAS[x.forma]+(x.est?' · valor estimado':''),ic:catOf(x.cat).ic,date:x.date,valor:x.valor,pago:x.status==='pago',act:`data-act="verConta" data-id="${x.rec}"`}));
+  return L.sort((a,b)=>a.date.localeCompare(b.date));
+}
+function pillPagar(l){
+  if(l.pago) return '<span class="pill p-ok">pago</span>';
+  const d=Math.round((new Date(l.date)-new Date(TODAY))/864e5);
+  if(d<0) return '<span class="pill p-neg">atrasado</span>';
+  return d===0?'<span class="pill p-fechada">vence hoje</span>':`<span class="pill p-prev">vence ${ddmm(l.date)}</span>`;
+}
+function aPagar(r){
+  const L=linhasAPagar(r).map(l=>({...l,chk:true}));
+  const metas={};r.items.filter(x=>x.kind==='reserva').forEach(x=>{const m=metas[x.meta]=metas[x.meta]||{valor:0,date:x.date,pago:true};m.valor+=x.valor;if(x.status!=='pago')m.pago=false;if(x.date<m.date)m.date=x.date});
+  Object.entries(metas).forEach(([k,m])=>{const mt=S.metas.find(z=>z.id===k);L.push({tipo:'reserva',nome:`Poupança ${mt?mt.nome:''}`,sub:'aporte mensal',ic:'🐷',date:m.date,valor:m.valor,pago:m.pago,act:'data-act="tab" data-t="reservas"'})});
+  L.sort((a,b)=>a.date.localeCompare(b.date));
+  if(r.avista) L.push({tipo:'avista',nome:'Pix, débito e dinheiro',sub:'já saiu na hora',ic:'⚡',date:'',valor:r.avista,pago:true,act:'data-act="tab" data-t="gastos"'});
+  const tot=L.reduce((a,l)=>a+l.valor,0), pago=L.filter(l=>l.pago).reduce((a,l)=>a+l.valor,0), falta=tot-pago;
+  const salSt=r.items.find(x=>x.kind==='receita'&&x.tipo==='salario'), extras=r.items.filter(x=>x.kind==='receita'&&x.tipo!=='salario'), sobra=r.entradas-tot;
+  const ent=(sig,t,d,v,cor)=>`<div class="prow"><span class="psig">${sig}</span><div class="main"><div class="t">${t}</div>${d?`<div class="d">${d}</div>`:''}</div><div class="v num" style="color:${cor}">${fmt(v)}</div></div>`;
+  return `<section class="card stack" style="gap:6px">
+  <div><h2>A pagar em ${mesNome(r.v)}</h2>
+    <div class="row" style="gap:14px;margin-top:6px;flex-wrap:wrap">
+      <span class="small"><span class="muted">A pagar</span> <b class="num">${fmt(tot)}</b></span>
+      <span class="small"><span class="muted">Pago</span> <b class="num" style="color:var(--good)">${fmt(pago)}</b></span>
+      <span class="small"><span class="muted">Falta</span> <b class="num" style="color:${falta>0?'var(--danger)':'var(--good)'}">${fmt(falta)}</b></span>
+    </div></div>
+  <div class="meter" style="height:6px;margin-top:4px"><i style="width:${tot?pago/tot*100:0}%;background:var(--good)"></i></div>
+  <div class="ptab">
+    ${L.map(l=>`<div class="prow ${l.pago?'ok':''}">
+      ${l.chk?`<button class="pchk" data-act="togglePago" data-key="${l.key}" aria-label="${l.pago?'Desmarcar':'Marcar'} ${esc(l.nome)} como paga" aria-pressed="${l.pago}">${l.pago?'✓':''}</button>`:`<span class="pic">${l.ic}</span>`}
+      <button class="main plink" ${l.act}><div class="t">${esc(l.nome)}</div><div class="d">${l.date&&!l.chk?'dia '+(+l.date.slice(8,10))+' · ':''}${esc(l.sub)}</div></button>
+      <div class="r"><div class="v num">${fmt(l.valor)}</div>${l.chk?pillPagar(l):''}</div></div>`).join('')||'<p class="muted small">Nada a pagar neste mês.</p>'}
+    <div class="prow tot"><span></span><div class="main"><div class="t">Total a pagar</div></div><div class="v num">${fmt(tot)}</div></div>
+  </div>
+  <div class="ptab" style="margin-top:12px">
+    <div class="small muted" style="padding:2px 0 4px">Do que entra no mês</div>
+    ${ent('+','Salário',salSt?(salSt.status==='pago'?'recebido':'previsto'):'',r.salario,'var(--good)')}
+    ${extras.map(x=>ent('+',esc(x.desc),ddmm(x.date),x.valor,'var(--good)')).join('')}
+    ${ent('−','Total a pagar','',tot,'inherit')}
+    <div class="prow tot"><span class="psig">=</span><div class="main"><div class="t">${sobra>=0?'Sobra depois de tudo pago':'Falta para pagar tudo'}</div></div><div class="v num" style="color:${sobra<0?'var(--danger)':'var(--mint)'}">${fmt(Math.abs(sobra))}</div></div>
+  </div>
+  <p class="small muted" style="margin:4px 0 0">A fatura de cada cartão é o que fechou no ciclo anterior.</p>
+  </section>`;
 }
 
 /* impacto de um lançamento: primeiro mês e parcela */
@@ -724,11 +800,7 @@ function viewGastos(){
   <section class="card"><div class="sec-h" style="margin:0 0 4px"><h2>Lançamentos de ${mesNome(UI.v)}</h2><span class="small muted">toque para ver ou editar</span></div>
     <div class="items">${doMes.map(linhaItem).join('')||'<p class="muted">Nenhum lançamento neste mês.</p>'}</div>
   </section>
-  <section class="card"><div class="sec-h" style="margin:0 0 4px"><h2>Recorrentes e contas fixas</h2><button class="link" data-act="novaConta">+ Nova</button></div>
-    <div class="items">${S.recs.map(r=>{const c=catOf(r.cat),it=ITEMS.find(x=>x.rec===r.id&&x.ym===UI.v);const onde=r.forma==='credito'?(cardOf(r.card)||{}).nome:FORMAS[r.forma];
-      return `<button class="item" data-act="verConta" data-id="${r.id}"><div class="ico">${c.ic}</div><div class="main"><div class="t">${esc(r.desc)}${r.fim?` <span class="pill p-neg">até ${mesCurto(ym(r.fim))}</span>`:''}</div><div class="d">Todo dia ${r.dia} · ${esc(onde)}${r.variavel?' · valor variável':''}</div></div>
-      <div class="r"><div class="v num">${fmt(it?it.valor:r.valor)}</div></div></button>`}).join('')}</div>
-  </section>`;
+  <button class="btn ghost" data-act="tab" data-t="recorrentes">Ver recorrentes e assinaturas</button>`;
 }
 let LASTG=null;
 function sheetGrupo(d,k){
@@ -743,6 +815,37 @@ function sheetGrupo(d,k){
   <section class="card"><div class="sec-h" style="margin:0 0 6px"><h3>Mês a mês em ${Y}</h3><span class="small muted">toque num mês</span></div>${meses.length?chartBars(meses,{act:'grupoMes'}):''}</section>
   <section class="card"><h3>Lançamentos de ${mesNome(UI.v)}</h3><div class="items">${noMes.sort((p,q)=>(q.compra||q.date).localeCompare(p.compra||p.date)).map(linhaItem).join('')||'<p class="muted">Nada neste mês.</p>'}</div></section>
   <button class="btn ghost" data-act="close">Fechar</button>`);
+}
+
+/* ---------- RECORRENTES ---------- */
+function proximaCobranca(r){const d=dateIn(TODAY_YM,r.dia);let v=d>=TODAY?TODAY_YM:TODAY_YM+1;if(r.fim&&v>ym(r.fim))return null;if(v<ym(r.inicio))v=ym(r.inicio);return dateIn(v,r.dia)}
+function viewRecorrentes(){
+  const ativas=S.recs.filter(r=>!r.fim||ym(r.fim)>=TODAY_YM), encerradas=S.recs.filter(r=>r.fim&&ym(r.fim)<TODAY_YM);
+  const valorMes=r=>{const it=ITEMS.find(x=>x.rec===r.id&&ym(x.compra||x.date)===TODAY_YM);return it?it.valor:r.valor};
+  const vivas=ativas.filter(r=>!r.fim||ym(r.fim)>TODAY_YM);
+  const tot=vivas.reduce((a,r)=>a+r.valor,0), noCartao=vivas.filter(r=>r.forma==='credito').reduce((a,r)=>a+r.valor,0);
+  const prox=ativas.map(r=>({r,d:proximaCobranca(r)})).filter(x=>x.d).sort((a,b)=>a.d.localeCompare(b.d));
+  const linha=(r,extra)=>{const c=catOf(r.cat),onde=r.forma==='credito'?(cardOf(r.card)||{}).nome:FORMAS[r.forma];
+    return `<button class="item" data-act="verConta" data-id="${r.id}"><div class="ico">${c.ic}</div><div class="main"><div class="t">${esc(r.desc)}</div><div class="d">Todo dia ${r.dia} · ${esc(onde||'')}${r.variavel?' · valor variável':''}</div>${extra||''}</div>
+    <div class="r"><div class="v num">${fmt(r.valor)}</div><div class="d">por mês</div></div></button>`};
+  return `<div class="stack">
+  <section class="card stack" style="gap:10px">
+    <div class="eyebrow">Recorrentes ativas</div>
+    <div class="row between" style="align-items:flex-end"><div><div class="bignum num" style="font-size:2rem">${fmt(tot)}</div><div class="small muted" style="margin-top:4px">por mês · ${vivas.length} ${vivas.length===1?'item':'itens'}</div></div></div>
+    <div class="grid2"><div class="flat"><div class="small muted">No cartão</div><b class="num">${fmt(noCartao)}</b></div><div class="flat"><div class="small muted">Pix, boleto e débito</div><b class="num">${fmt(tot-noCartao)}</b></div></div>
+    <button class="btn" data-act="novaConta">+ Nova assinatura ou conta fixa</button>
+  </section>
+  <section class="card"><div class="sec-h" style="margin:0 0 4px"><h2>Próximas cobranças</h2></div>
+    <div class="items">${prox.slice(0,5).map(({r,d})=>{const f=r.forma==='credito'?fatura(cardOf(r.card),d):null;
+      return `<button class="item" data-act="verConta" data-id="${r.id}" style="grid-template-columns:52px 1fr auto"><div class="dia"><b>${d.slice(8,10)}</b><span>${MES3[+d.slice(5,7)-1]}</span></div>
+      <div class="main"><div class="t">${esc(r.desc)}</div><div class="d">${f?`fatura que vence ${ddmm(dateIn(f.venc,cardOf(r.card).vence))}`:FORMAS[r.forma]}</div></div><div class="r"><div class="v num">${fmt(valorMes(r))}</div></div></button>`}).join('')||'<p class="muted">Nada programado.</p>'}</div>
+  </section>
+  <section class="card"><div class="sec-h" style="margin:0 0 4px"><h2>Todas</h2><span class="small muted">toque para editar ou cancelar</span></div>
+    <div class="items">${ativas.map(r=>linha(r,r.fim?`<div class="impact" style="color:var(--danger)">Última cobrança em ${mesNome(ym(r.fim))}</div>`:'')).join('')||'<p class="muted">Nenhuma ainda.</p>'}</div>
+  </section>
+  ${encerradas.length?`<section class="card"><div class="sec-h" style="margin:0 0 4px"><h2>Canceladas</h2></div>
+    <div class="items">${encerradas.map(r=>`<div class="item" style="cursor:default"><div class="ico" style="opacity:.55">${catOf(r.cat).ic}</div><div class="main"><div class="t" style="opacity:.7">${esc(r.desc)}</div><div class="d">Cancelada · última cobrança em ${mesCurto(ym(r.fim))}</div></div><div class="r"><button class="link" data-act="reativar" data-id="${r.id}">Reativar</button></div></div>`).join('')}</div></section>`:''}
+  </div>`;
 }
 
 /* ---------- CARTÕES ---------- */
@@ -781,7 +884,7 @@ function viewCartoes(){
       <div class="st"><span class="dot"></span><b>${ddmm(ciclo.ini)}</b>fechou a anterior, começa a gastar</div>
       <div class="st now"><span class="dot"></span><b>Hoje ${ddmm(TODAY)}</b>compras entram aqui</div>
       <div class="st"><span class="dot"></span><b>${ddmm(ciclo.fim)}</b>fecha a fatura</div>
-      <div class="st"><span class="dot"></span><b>${ddmm(aberta.venc)}</b>paga com o salário de ${mesNome(ym(aberta.venc))}</div>
+      <div class="st"><span class="dot"></span><b>${ddmm(aberta.venc)}</b>vence a fatura</div>
     </div>
   </section>
 
@@ -808,13 +911,13 @@ function sheetFatura(k){
 /* ---------- SALÁRIO ---------- */
 function viewSalario(){
   const Y=UI.ano, rows=[];
-  for(let m=0;m<12;m++){const v=Y*12+m, it=ITEMS.filter(x=>x.kind==='receita'&&x.ym===v);
+  for(let m=0;m<12;m++){const v=Y*12+m, it=ITEMS.filter(x=>x.kind==='receita'&&x.mm===v);
     rows.push({v,sal:it.filter(x=>x.tipo==='salario').reduce((a,x)=>a+x.valor,0),ext:it.filter(x=>x.tipo!=='salario').reduce((a,x)=>a+x.valor,0),fut:dateIn(v,S.config.salarioDia)>TODAY,extras:it.filter(x=>x.tipo!=='salario')})}
   const tot=rows.reduce((a,r)=>a+r.sal+r.ext,0), rec=rows.filter(r=>!r.fut).reduce((a,r)=>a+r.sal+r.ext,0);
-  const totAnt=ITEMS.filter(x=>x.kind==='receita'&&ymY(x.ym)===Y-1).reduce((a,x)=>a+x.valor,0);
+  const totAnt=ITEMS.filter(x=>x.kind==='receita'&&ymY(x.mm)===Y-1).reduce((a,x)=>a+x.valor,0);
   const diff=totAnt?((tot-totAnt)/totAnt*100):0;
-  const anos=[...new Set(ITEMS.filter(x=>x.kind==='receita').map(x=>ymY(x.ym)))].filter(a=>a<=ymY(TODAY_YM)).sort().slice(-4);anos.push(0);
-  const serie=anos.filter(Boolean).map(a=>({lab:String(a),val:ITEMS.filter(x=>x.kind==='receita'&&ymY(x.ym)===a).reduce((s,x)=>s+x.valor,0)}));
+  const anos=[...new Set(ITEMS.filter(x=>x.kind==='receita').map(x=>ymY(x.mm)))].filter(a=>a<=ymY(TODAY_YM)).sort().slice(-4);anos.push(0);
+  const serie=anos.filter(Boolean).map(a=>({lab:String(a),val:ITEMS.filter(x=>x.kind==='receita'&&ymY(x.mm)===a).reduce((s,x)=>s+x.valor,0)}));
   return `<div class="seg" style="margin-bottom:12px">${anos.filter(Boolean).map(a=>`<button class="${a===Y?'on':''}" data-act="ano" data-a="${a}">${a}</button>`).join('')}</div>
   <div class="stack">
   <section class="card stack" style="gap:8px"><div class="eyebrow">Renda total de ${Y}</div><div class="bignum num" style="font-size:2rem">${fmt(tot)}</div>
@@ -854,13 +957,13 @@ function dividasLista(){
   ITEMS.filter(x=>x.lanc&&x.n>1).forEach(x=>{(map[x.lanc]=map[x.lanc]||[]).push(x)});
   return Object.entries(map).map(([id,a])=>{const l=S.lancs.find(z=>z.id===id);a.sort((p,q)=>p.i-q.i);
     const total=a.reduce((s,x)=>s+x.valor,0), pagas=a.filter(x=>x.status==='pago').length, rest=a.filter(x=>x.status!=='pago');
-    const restante=rest.reduce((s,x)=>s+x.valor,0), fim=a[a.length-1].ym, faltam=rest.length;
+    const restante=rest.reduce((s,x)=>s+x.valor,0), fim=a[a.length-1].mm, faltam=rest.length;
     return {l,a,total,pagas,n:l.parcelas,restante,fim,faltam,parcela:a[0].valor,juros:l.valorParcela?l.valorParcela*l.parcelas-l.valor:0,
       prazo:faltam<=6?'curto':faltam<=12?'medio':'longo'}}).filter(d=>d.restante>0).sort((a,b)=>a.fim-b.fim);
 }
 function viewDividas(){
   const ds=dividasLista(), livres=S.livres||[], tot=ds.reduce((a,d)=>a+d.restante,0)+livres.reduce((a,x)=>a+x.saldo,0);
-  const mensal=[];for(let v=TODAY_YM+1;v<TODAY_YM+13;v++) mensal.push({lab:MES3[ymM(v)],val:ITEMS.filter(x=>x.ym===v&&x.n>1&&x.lanc).reduce((a,x)=>a+x.valor,0),tip:'',v});
+  const mensal=[];for(let v=TODAY_YM+1;v<TODAY_YM+13;v++) mensal.push({lab:MES3[ymM(v)],val:ITEMS.filter(x=>x.mm===v&&x.n>1&&x.lanc).reduce((a,x)=>a+x.valor,0),tip:'',v});
   mensal.forEach(m=>m.tip=`${cap(mesAno(m.v))}: ${fmt(m.val)} em parcelas`);
   const grp={curto:'Curto prazo · até 6 parcelas',medio:'Médio prazo · 7 a 12',longo:'Longo prazo · mais de 12'};
   return `${backBtn('Dívidas')}<div class="stack">
@@ -909,11 +1012,12 @@ function viewRelatorios(){
   const div=ms.map(r=>({lab:MES3[ymM(r.v)],val:ITEMS.filter(x=>x.lanc&&x.n>1&&x.ym>r.v).reduce((a,x)=>a+x.valor,0),v:r.v}));
   div.forEach(d=>d.tip=`Fim de ${mesNome(d.v)}: ${fmt(d.val)} em parcelas a pagar`);
   return `${backBtn('Relatórios')}<div class="stack">
+  <section class="card"><div class="sec-h" style="margin:0 0 8px"><h2>Entrou, saiu e sobrou</h2><span class="small muted">em R$ · claro = previsão</span></div><div class="scrollx"><table class="tbl num"><thead><tr><th>Mês</th><th>Entrou</th><th>Saiu</th><th>Guardou</th><th>Sobrou</th></tr></thead><tbody>
+  ${ms.map(r=>`<tr class="${r.v>TODAY_YM?'fut':''}"><td>${mesCurto(r.v)}</td><td>${n0(r.entradas)}</td><td>${n0(r.saidas)}</td><td>${n0(r.reserva)}</td><td><b style="color:${r.livre<0?'var(--danger)':'inherit'}">${n0(r.livre)}</b></td></tr>`).join('')}</tbody></table></div></section>
   <section class="card"><div class="sec-h" style="margin:0 0 8px"><h2>Entrou × saiu</h2><span class="small muted">${mesCurto(START())} a ${mesCurto(TODAY_YM+5)}</span></div>${chartPair(pair,['Entradas','Gastos'])}</section>
   <section class="card"><div class="sec-h" style="margin:0 0 8px"><h2>Sobra no fim de cada mês</h2></div>${chartBars(livre,{act:'mesSel'})}<p class="small muted" style="margin:8px 0 0">Toque num mês para abrir no Início.</p></section>
   <section class="card"><div class="sec-h" style="margin:0 0 8px"><h2>Dívidas diminuindo</h2></div>${chartLine(div,'var(--s-div)')}</section>
-  <section class="card"><h2 style="margin-bottom:8px">Resumo</h2><div class="scrollx"><table class="tbl num"><thead><tr><th>Mês</th><th>Entrou</th><th>Saiu</th><th>Guardou</th><th>Sobra</th></tr></thead><tbody>
-  ${ms.map(r=>`<tr class="${r.v>TODAY_YM?'fut':''}"><td>${mesCurto(r.v)}</td><td>${fmt0(r.entradas)}</td><td>${fmt0(r.saidas)}</td><td>${fmt0(r.reserva)}</td><td><b>${fmt0(r.livre)}</b></td></tr>`).join('')}</tbody></table></div></section>
+
   </div>`;
 }
 
@@ -993,6 +1097,20 @@ function viewSimulador(){
 /* ---------- CONFIGURAÇÕES ---------- */
 function viewConfig(){
   return `${backBtn('Configurações')}<div class="stack">
+  <section class="card stack" id="atualizacoes" style="gap:10px"><div class="row between"><h3>Atualizações</h3><span class="pill p-aberta">versão ${VERSAO}</span></div>
+    ${ATUALIZACOES.map((a,ix)=>`<div class="upd ${ix?'':'nova'}"><div class="row between"><b>Versão ${a.v}</b><span class="small muted">${a.data}</span></div><ul>${a.itens.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`).join('')}
+  </section>
+  <details class="card fold"><summary><h3>Categorias <span class="small muted" style="font-weight:600">· ${S.cats.length}</span></h3><span class="chev" aria-hidden="true">⌄</span></summary><div class="row between" style="margin:8px 0 4px"><p class="small muted" style="margin:0">Toque para mudar nome, ícone ou grupo.</p><button class="link" data-act="editCat" data-id="">+ Nova</button></div>
+    <div class="items">${S.cats.map(c=>`<button class="item" data-act="editCat" data-id="${c.id}" style="grid-template-columns:40px 1fr auto"><div class="ico">${c.ic}</div><div class="main"><div class="t">${esc(c.nome)}</div></div><div class="r"><span class="pill p-prev">${GRUPOS.find(g=>g[0]===c.grupo)[1]}</span></div></button>`).join('')}</div>
+  </details>
+  <section class="card stack" style="gap:10px"><h3>Backup</h3>
+    <p class="small muted" style="margin:0">Seus dados ficam salvos no aparelho e na nuvem. Guarde uma cópia de vez em quando.</p>
+    <button class="btn ghost" data-act="exportar">Baixar backup (JSON)</button>
+    <label class="btn ghost" for="impFile" style="text-align:center">Restaurar de um backup</label><input type="file" id="impFile" accept="application/json,.json" hidden>
+  </section>
+  <details class="card fold"><summary><h3>Ajustes do app</h3><span class="chev" aria-hidden="true">⌄</span></summary>
+    <p class="small muted" style="margin:6px 0 12px">Cartões, teto e salário. Só precisa mexer aqui quando algo mudar.</p>
+    <div class="stack">
   ${S.cards.map(c=>`<section class="card stack" style="gap:10px"><h3>${esc(c.nome)}</h3>
     <div class="field"><label for="cf-nm-${c.id}">Nome do cartão</label><input class="inp" id="cf-nm-${c.id}" value="${esc(c.nome)}" data-cfg="card" data-id="${c.id}" data-k="nome"></div>
     <div class="grid2"><div class="field"><label for="cf-f-${c.id}">Fecha dia</label><input class="inp num" id="cf-f-${c.id}" type="number" min="1" max="28" value="${c.fecha}" data-cfg="card" data-id="${c.id}" data-k="fecha"></div>
@@ -1007,17 +1125,9 @@ function viewConfig(){
   <section class="card stack" style="gap:10px"><h3>Salário e saldo</h3>
     <div class="grid2"><div class="field"><label for="cf-sal">Salário atual</label><input class="inp num" id="cf-sal" inputmode="decimal" value="${(salarioEm(TODAY_YM)/100).toLocaleString('pt-BR')}" data-cfg="sal"></div>
     <div class="field"><label for="cf-dia">Cai no dia</label><input class="inp num" id="cf-dia" type="number" min="1" max="28" value="${S.config.salarioDia}" data-cfg="dia"></div></div>
-    <div class="field"><label for="cf-si">Saldo em conta quando comecei (${mesCurto(START())})</label><input class="inp num" id="cf-si" inputmode="decimal" value="${(S.config.saldoInicial/100).toLocaleString('pt-BR',{minimumFractionDigits:2})}" data-cfg="si"></div>
-    <label class="check"><input type="checkbox" id="cf-sobra" ${S.config.levarSobra?'checked':''} data-cfg="sobra"><span>Levar o que sobrou (ou faltou) de um mês para o próximo</span></label>
   </section>
-  <section class="card"><div class="sec-h" style="margin:0 0 6px"><h3>Categorias</h3><button class="link" data-act="editCat" data-id="">+ Nova</button></div><p class="small muted" style="margin:0 0 4px">Toque para mudar nome, ícone ou grupo do 50/30/20.</p>
-    <div class="items">${S.cats.map(c=>`<button class="item" data-act="editCat" data-id="${c.id}" style="grid-template-columns:40px 1fr auto"><div class="ico">${c.ic}</div><div class="main"><div class="t">${esc(c.nome)}</div></div><div class="r"><span class="pill p-prev">${GRUPOS.find(g=>g[0]===c.grupo)[1]}</span></div></button>`).join('')}</div>
-  </section>
-  <section class="card stack" style="gap:10px"><h3>Backup</h3>
-    <p class="small muted" style="margin:0">Seus dados ficam salvos no aparelho e na nuvem. Guarde uma cópia de vez em quando.</p>
-    <button class="btn ghost" data-act="exportar">Baixar backup (JSON)</button>
-    <label class="btn ghost" for="impFile" style="text-align:center">Restaurar de um backup</label><input type="file" id="impFile" accept="application/json,.json" hidden>
-  </section>
+    </div>
+  </details>
   <p class="small faint" style="text-align:center">MeuDinheiro · versão ${VERSAO}</p>
   </div>`;
 }
@@ -1080,9 +1190,9 @@ function drawPrev(){
   const vals=split(val,n,vp||0);
   if(G.forma==='credito'){const c=cardOf(G.card),f=fatura(c,d);
     el.innerHTML=`<div>Entra na fatura do <b>${esc(c.nome)}</b> que fecha ${ddmm(dateIn(f.close,c.fecha))} e vence ${ddmm(dateIn(f.venc,c.vence))}.</div>
-    <div>Sai do seu dinheiro de <b>${mesNome(f.venc)}</b>${n>1?`, ${n}x de ${fmt(vals[0])} até ${mesAno(f.venc+n-1)}`:''}.</div>${vp?`<div>Juros: ${fmt(vp*n-val)}</div>`:''}`;}
-  else if(G.forma==='boleto'){el.innerHTML=`<div><b>${n}x de ${fmt(vals[0])}</b>, a primeira em ${mesNome(ym(d)+1)}, a última em ${mesAno(ym(d)+n)}.</div>`}
-  else el.innerHTML=`<div>Sai agora, do seu dinheiro de <b>${mesNome(ym(d))}</b>.</div>`;
+    <div>Entra nos gastos de <b>${mesNome(f.venc-1)}</b>${n>1?`. ${n}x de ${fmt(vals[0])}, a última em ${mesAno(f.venc+n-2)}`:''}.</div>${vp?`<div>Juros: ${fmt(vp*n-val)}</div>`:''}`;}
+  else if(G.forma==='boleto'){el.innerHTML=`<div><b>${n}x de ${fmt(vals[0])}</b>, a primeira em ${mesNome(ym(d))}.</div>`}
+  else el.innerHTML=`<div>Entra nos gastos de <b>${mesNome(ym(d))}</b>.</div>`;
 }
 function salvarGasto(){
   const val=parseBRL(G.valor); if(!val){toast('Digite o valor da compra.');G.step=0;drawGasto();return}
@@ -1107,7 +1217,7 @@ function sheetLanc(id){
   openSheet(`<div class="row"><div class="ico">${c.ic}</div><div><h2>${esc(l.desc)}</h2><div class="small muted">${ddmmaa(l.data)} · ${l.forma==='credito'?esc(cardOf(l.card).nome):FORMAS[l.forma]} · ${esc(c.nome)}</div></div></div>
   <div class="grid2"><div class="kpi"><div class="k">Valor da compra</div><div class="n num">${fmt(l.valor)}</div></div><div class="kpi"><div class="k">${n>1?`${n} parcelas`:'Pagamento'}</div><div class="n num">${n>1?fmt(its[0]?its[0].valor:0):'à vista'}</div></div></div>
   ${l.valorParcela?`<div class="note warn small">Total parcelado ${fmt(total)}: ${fmt(total-l.valor)} de juros.</div>`:''}
-  <section class="card"><h3>Onde essa compra pesa</h3><div class="scrollx"><table class="tbl num"><thead><tr><th>Mês do dinheiro</th><th>Parcela</th><th>Valor</th><th>Status</th></tr></thead><tbody>
+  <section class="card"><h3>Onde essa compra pesa</h3><div class="scrollx"><table class="tbl num"><thead><tr><th>Mês</th><th>Parcela</th><th>Valor</th><th>Status</th></tr></thead><tbody>
   ${its.map(x=>`<tr><td style="text-transform:capitalize">${mesCurto(x.ym)} · ${ddmm(x.date)}</td><td>${x.n>1?`${x.i}/${x.n}`:'—'}</td><td>${fmt(x.valor)}</td><td>${x.status==='pago'?'paga':'a pagar'}</td></tr>`).join('')}
   </tbody></table></div></section>
   <div id="lancAcoes" class="stack" style="gap:8px">
@@ -1130,7 +1240,8 @@ function sheetConta(id){
   ${r?`<p class="small muted" style="margin:0">Mudar o valor vale a partir de ${mesNome(TODAY_YM)}. Os meses anteriores ficam como estavam.</p>`:''}
   <button class="btn" data-act="salvarConta" data-id="${r?r.id:''}">${r?'Salvar alterações':'Salvar'}</button>
   ${r?`<section class="card"><h3>Próximos meses</h3><div class="scrollx"><table class="tbl num"><thead><tr><th>Mês</th><th>Valor</th><th>Status</th></tr></thead><tbody>${its.map(x=>`<tr><td>${mesCurto(x.ym)} · ${ddmm(x.date)}</td><td>${x.est?'~ ':''}${fmt(x.valor)}</td><td>${x.status==='pago'?'paga':'prevista'}</td></tr>`).join('')}</tbody></table></div></section>`:''}
-  ${r&&!r.fim?`<button class="btn ghost" data-act="encerrarConta" data-id="${r.id}">Encerrar a partir de ${mesNome(TODAY_YM+1)}</button>`:''}
+  ${r&&!r.fim?`<div class="stack" style="gap:8px" id="cancBox"><button class="btn ghost" data-act="pedirCancelRec" data-id="${r.id}">Cancelar assinatura ou conta</button></div>`:''}
+  ${r&&r.fim?`<button class="btn ghost" data-act="reativar" data-id="${r.id}">Reativar</button>`:''}
   ${r?`<div id="contaDel"><button class="btn danger" data-act="pedirDel" data-tipo="conta" data-id="${r.id}">Excluir (foi erro)</button></div>`:''}
   <button class="btn ghost" data-act="close">Fechar</button>`);
 }
@@ -1204,7 +1315,7 @@ function sheetLivre(id){
 const DEL_TXT={conta:'A recorrente some de todos os meses.',receita:'A receita some do mês.',cat:'A categoria some da lista.',meta:'A reserva e o saldo dela somem.',livre:'A dívida some da lista.'};
 const DEL_BOX={conta:'contaDel',receita:'recDel',cat:'catDel',meta:'metaDel',livre:'livreDel'};
 /* ---------- AÇÕES ---------- */
-const VIEWS={inicio:viewInicio,gastos:viewGastos,cartoes:viewCartoes,salario:viewSalario,mais:viewMais,dividas:viewDividas,reservas:viewReservas,relatorios:viewRelatorios,disciplina:viewDisciplina,simulador:viewSimulador,config:viewConfig};
+const VIEWS={recorrentes:viewRecorrentes,inicio:viewInicio,gastos:viewGastos,cartoes:viewCartoes,salario:viewSalario,mais:viewMais,dividas:viewDividas,reservas:viewReservas,relatorios:viewRelatorios,disciplina:viewDisciplina,simulador:viewSimulador,config:viewConfig};
 const ACT={
   tab:el=>{UI.tab=el.dataset.t;closeSheet();render();scrollTo(0,0)},
   mes:el=>{UI.v+=+el.dataset.d;render()},
@@ -1277,7 +1388,11 @@ const ACT={
     delete r.card;if(fm.startsWith('c:')){r.forma='credito';r.card=fm.slice(2)}else r.forma=fm;
     recompute();closeSheet();render();toast(`${esc(r.desc)} salva.`,[{t:'Desfazer',a:'undo'}])},
   salvarVar:el=>{const r=S.recs.find(x=>x.id===el.dataset.id),v=parseBRL(document.getElementById('cVar').value);if(!v)return;r.valores=r.valores||{};r.valores[ymKey(TODAY_YM+1)]=v;r.valor=v;recompute();closeSheet();toast(`Valor de ${mesNome(TODAY_YM+1)} atualizado.`);render()},
-  encerrarConta:el=>{const r=S.recs.find(x=>x.id===el.dataset.id);r.fim=ymKey(TODAY_YM);recompute();closeSheet();toast(`${esc(r.desc)} encerrada. Some a partir de ${mesNome(TODAY_YM+1)}.`);render()},
+  pedirCancelRec:el=>{const id=el.dataset.id;document.getElementById('cancBox').innerHTML=`<div class="note small">Quando parar de cobrar?</div><button class="btn ghost" data-act="encerrarConta" data-id="${id}" data-q="0">Depois da cobrança de ${mesNome(TODAY_YM)}</button><button class="btn danger" data-act="encerrarConta" data-id="${id}" data-q="1">Já em ${mesNome(TODAY_YM)} (não cobra mais)</button>`},
+  reativar:el=>{const r=S.recs.find(x=>x.id===el.dataset.id);if(!r)return;snap();
+    if(r.fim&&ym(r.fim)<TODAY_YM-1){const n=JSON.parse(JSON.stringify(r));n.id='r'+Date.now();delete n.fim;delete n.valores;n.inicio=ymKey(TODAY_YM);S.recs.push(n)}else delete r.fim;
+    recompute();closeSheet();render();toast(`${esc(r.desc)} reativada.`,[{t:'Desfazer',a:'undo'}])},
+  encerrarConta:el=>{snap();const r=S.recs.find(x=>x.id===el.dataset.id);const ja=el.dataset.q==='1';r.fim=ymKey(TODAY_YM-(ja?1:0));recompute();closeSheet();render();toast(`${esc(r.desc)} cancelada. ${ja?'Não cobra mais.':`Última cobrança em ${mesNome(TODAY_YM)}.`}`,[{t:'Desfazer',a:'undo'}])},
   salvarReceita:el=>{const v=parseBRL(document.getElementById('rValor').value);if(!v){toast('Digite o valor.');return}snap();
     const t=document.getElementById('rTipo').value,d=document.getElementById('rData').value||TODAY;let e=el.dataset.id?S.receitas.find(x=>x.id===el.dataset.id):null;
     if(!e){e={id:'e'+Date.now()};S.receitas.push(e)}Object.assign(e,{desc:document.getElementById('rDesc').value.trim()||TIPOS_REC[t],tipo:t,valor:v,data:d});
@@ -1288,6 +1403,10 @@ const ACT={
     if(SIM.forma==='credito'){l.card=SIM.card;if(SIM.n>1)l.parcelas=SIM.n;if(SIM.vp&&SIM.n>1)l.valorParcela=SIM.vp}
     S.lancs.push(l);recompute();const f=ITEMS.find(x=>x.lanc===l.id);UI.tab='inicio';render();scrollTo(0,0);toast(`Compra lançada. A 1ª parcela pesa em <b>${mesNome(f.ym)}</b>.`)},
   novoCartao:()=>{const id='c'+Date.now();S.cards.push({id,nome:'Novo cartão',tom:S.cards.length%2?'mint':'lilac',limite:200000,fecha:15,vence:22,fechaNaAtual:false});recompute();render();toast('Cartão criado. Ajuste fechamento e vencimento abaixo.')},
+  verNovidades:()=>{UI.tab='config';render();document.querySelectorAll('.toast').forEach(t=>t.remove());setTimeout(()=>{const e=document.getElementById('atualizacoes');e&&e.scrollIntoView({behavior:'smooth'})},50)},
+  togglePago:el=>{const k=el.dataset.key;snap();S.pagos=S.pagos||[];S.abertos=S.abertos||[];const estava=el.getAttribute('aria-pressed')==='true';
+    S.pagos=S.pagos.filter(x=>x!==k);S.abertos=S.abertos.filter(x=>x!==k);if(estava)S.abertos.push(k);else S.pagos.push(k);recompute();render();toast(estava?'Marcado como não pago.':'Marcado como pago.',[{t:'Desfazer',a:'undo'}])},
+  abrirFatura:el=>{UI.card=el.dataset.card;const c=cardOf(UI.card),v=+el.dataset.v;sheetFatura(c.vence>c.fecha?v+1:v)},
   exportar:()=>{const b=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`meudinheiro-${TODAY}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast('Backup baixado.')}
 };
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const a=ACT[el.dataset.act];if(a){a(el,e);talvezSalvar()}});
@@ -1321,6 +1440,7 @@ function render(){
   document.querySelector('.fab').hidden=!['inicio','gastos','cartoes'].includes(UI.tab);
 }
 recompute();render();marcar('local');
+try{const vista=localStorage.getItem(CHAVE+'-versao');if(vista&&vista!==VERSAO)setTimeout(()=>toast(`Atualizado para a versão ${VERSAO}.`,[{t:'Ver novidades',a:'verNovidades'}]),600);localStorage.setItem(CHAVE+'-versao',VERSAO)}catch(e){}
 carregarFirebase();
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
 
