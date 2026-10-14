@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
 <title>MeuDinheiro</title>
 <meta name="theme-color" content="#6d4fc6">
@@ -42,6 +42,8 @@
   --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); --on-accent:#06241a; color-scheme:dark}
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--fg)}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+input:not(.bigin),select,textarea{font-size:16px!important}
 body{font-family:var(--f-body);font-size:15px;line-height:1.45}
 button,input,select{font:inherit;color:inherit}
 .app{max-width:460px;margin:0 auto;padding-inline:16px;padding-block:8px 110px}
@@ -386,7 +388,7 @@ h3{font-size:1rem;font-weight:700}
 <div class="app">
   <header class="top">
     <div class="brand">Meu<b>Dinheiro</b></div>
-    <div class="row"><button class="ver" id="sync" data-act="tab" data-t="config" aria-label="Versão do app e atualizações"><i></i><span>v1.1</span></button></div>
+    <div class="row"><button class="ver" id="sync" data-act="tab" data-t="config" aria-label="Versão do app e atualizações"><i></i><span>v1.2</span></button></div>
   </header>
   <main id="main"></main>
 </div>
@@ -422,8 +424,9 @@ const FORMAS={pix:'Pix',debito:'Débito',dinheiro:'Dinheiro',credito:'Crédito',
    ========================================================== */
 const FIREBASE={apiKey:"AIzaSyC966WazsmQV2qwAAWorZk0Dcz9ePGtIJI",authDomain:"isabelle-financas.firebaseapp.com",databaseURL:"https://isabelle-financas-default-rtdb.firebaseio.com",projectId:"isabelle-financas"};
 const SALA="financas/meudinheiro-5b8e31c2d9f4";   // gaveta do MeuDinheiro — NÃO MUDAR
-const VERSAO='1.1', CHAVE='meudinheiro-v1';
+const VERSAO='1.2', CHAVE='meudinheiro-v1';
 const ATUALIZACOES=[
+  {v:'1.2',data:'14/10/2026',itens:['Empréstimos e dívidas têm uma tela própria de edição: nome, valor da parcela, total de parcelas, vencimento e como você paga (boleto, Pix, débito ou transferência).','Corrigido: editar um empréstimo e escolher Pix transformava ele num gasto único e ele sumia da lista.','A tela não dá mais zoom sozinha ao tocar nos campos ou dar dois toques.','Na aba Dívidas, botão para adicionar um empréstimo novo.']},
   {v:'1.1',data:'05/10/2026',itens:['Nova aba Recorrentes: assinaturas e contas fixas num só lugar, com total por mês, próximas cobranças, cancelar e reativar.','A versão do app aparece pequena no topo da tela. Toque nela para ver as novidades.','Configurações mais limpas: cartões, teto e salário ficam em "Ajustes do app", recolhidos.','Salário passou para o menu Mais.','Cada mês mostra os gastos feitos nele, seja no cartão, no Pix, no débito ou em dinheiro, junto com as dívidas e poupanças, e a sobra do mês.','Cada mês começa do zero: o app não puxa mais saldo do mês anterior. O que entrou, saiu e sobrou em cada mês fica em Mais › Relatórios.','Na Início, "De onde vem esse número" virou "A pagar": A pagar, Pago e Falta, cada fatura, cada dívida e cada poupança pelo dia, um toque para marcar como paga, e quanto entra e sobra.']},
   {v:'1.0',data:'05/10/2026',itens:['Primeira versão do MeuDinheiro, com os dados do backup de 05/10.']}
 ];
@@ -447,7 +450,7 @@ function iniciarFirebase(){try{if(!firebase.apps.length)firebase.initializeApp(F
     else enviar();marcar(pendente?'salvando':'on')},()=>marcar('erro'))}catch(e){marcar('erro')}}
 let ITEMS=[], MEMO={};
 const START=()=>ym(S.config.inicio);
-const catOf=id=>S.cats.find(c=>c.id===id)||S.cats[S.cats.length-1];
+const catOf=id=>S.cats.find(c=>c.id===id)||S.cats.find(c=>c.id==='outros')||S.cats[0];
 const cardOf=id=>S.cards.find(c=>c.id===id);
 
 /* Em qual fatura uma compra cai: fechamento (close) e mês em que o dinheiro sai (venc) */
@@ -639,7 +642,7 @@ function linhasAPagar(r){
   const v=r.v, L=[];
   r.cartoes.filter(c=>c.valor).forEach(c=>L.push({tipo:'fatura',key:`fat:${c.card.id}:${ymKey(v+1)}`,nome:`Fatura ${c.card.nome}`,sub:`${c.itens.length} lançamentos`,ic:'💳',date:c.venc,valor:c.valor,pago:c.pago,act:`data-act="abrirFatura" data-card="${c.card.id}" data-v="${v}"`}));
   const div={};r.items.filter(x=>x.kind==='divida').forEach(x=>{(div[x.lanc]=div[x.lanc]||[]).push(x)});
-  Object.values(div).forEach(a=>{const x=a[0];L.push({tipo:'divida',key:`lanc:${x.lanc}:${ymKey(v+1)}`,nome:x.desc,sub:`parcela ${x.i} de ${x.n}`,ic:catOf(x.cat).ic,date:x.date,valor:a.reduce((s,y)=>s+y.valor,0),pago:a.every(y=>y.status==='pago'),act:`data-act="verLanc" data-id="${x.lanc}"`})});
+  Object.values(div).forEach(a=>{const x=a[0];L.push({tipo:'divida',key:`lanc:${x.lanc}:${ymKey(v+1)}`,nome:x.desc,sub:`${PAGA[(S.lancs.find(z=>z.id===x.lanc)||{}).pagaCom]||'Boleto'} · parcela ${x.i} de ${x.n}`,ic:catOf(x.cat).ic,date:x.date,valor:a.reduce((s,y)=>s+y.valor,0),pago:a.every(y=>y.status==='pago'),act:`data-act="verLanc" data-id="${x.lanc}"`})});
   r.items.filter(x=>x.kind==='conta').forEach(x=>L.push({tipo:'conta',key:`rec:${x.rec}:${ymKey(v+1)}`,nome:x.desc,sub:FORMAS[x.forma]+(x.est?' · valor estimado':''),ic:catOf(x.cat).ic,date:x.date,valor:x.valor,pago:x.status==='pago',act:`data-act="verConta" data-id="${x.rec}"`}));
   return L.sort((a,b)=>a.date.localeCompare(b.date));
 }
@@ -976,6 +979,7 @@ function viewDividas(){
     <div class="meter" style="margin-top:6px;height:6px"><i style="width:${d.pagas/d.n*100}%;background:var(--s-div)"></i></div>
     <div class="impact" style="color:var(--muted)">Termina em ${mesAno(d.fim)}${d.juros?` · juros ${fmt(d.juros)}`:''}</div></div>
     <div class="r"><div class="small muted">falta</div><div class="v num">${fmt(d.restante)}</div></div></button>`).join('')}</section>`}).join('')}
+  <button class="btn ghost" data-act="novaDivida">+ Novo empréstimo ou dívida</button>
   <section class="card"><div class="sec-h" style="margin:0 0 6px"><h3>Sem parcela fixa</h3><button class="link" data-act="editLivre" data-id="">+ Adicionar</button></div>${livres.map(x=>`<button class="item" data-act="editLivre" data-id="${x.id}" style="grid-template-columns:40px 1fr auto"><div class="ico">🤝</div><div class="main"><div class="t">${esc(x.nome)}</div><div class="d">${esc(x.obs)}</div></div><div class="r"><div class="small muted">falta</div><div class="v num">${fmt(x.saldo)}</div></div></button>`).join('')||'<p class="small muted">Nenhuma.</p>'}<p class="small muted" style="margin:6px 0 0">Não entra no orçamento do mês porque não tem parcela definida.</p></section>
   <div class="note small">Compras parceladas no cartão aparecem aqui automaticamente. Não há um cadastro separado: é a mesma compra, vista de outro jeito.</div>
   </div>`;
@@ -1170,7 +1174,7 @@ function drawGasto(first){
       <div class="preview" id="gPrev"></div></div>
       <button class="btn" data-act="gNext">Continuar</button>`:''}`;
   if(st===2) body=`<div class="catgrid">${catsPorUso().map(c=>`<button class="catb ${G.cat===c.id?'on':''}" data-act="gCat" data-val="${c.id}"><span>${c.ic}</span>${esc(c.nome)}</button>`).join('')}<button class="catb nova" data-act="editCat" data-id="" data-ret="1"><span>＋</span>Nova categoria</button></div>`;
-  if(st===3){const c=catOf(G.cat);body=`<div class="card" style="text-align:center"><div class="bignum num" style="font-size:2.2rem">${fmt(val)}</div><div class="muted" style="margin-top:4px">${esc(G.desc.trim()||c.nome)}</div></div>
+  if(st===3){const c=catOf(G.cat),orig=G.editId?S.lancs.find(x=>x.id===G.editId):null,virou=orig&&(orig.parcelas||1)>1&&!parcelado();body=`${virou?`<div class="note warn small"><b>Atenção:</b> era parcelado em ${orig.parcelas}x. Do jeito que está, vira um gasto único de ${fmt(val)}. Para mudar só a forma de pagamento, volte e escolha um parcelamento.</div>`:''}<div class="card" style="text-align:center"><div class="bignum num" style="font-size:2.2rem">${fmt(val)}</div><div class="muted" style="margin-top:4px">${esc(G.desc.trim()||c.nome)}</div></div>
     <div class="card" style="padding:4px 16px"><div class="ledger">
       <button class="lrow rowbtn" data-act="gGo" data-s="0"><span class="sign">✏️</span><span class="lbl"><span class="t">Valor e descrição</span></span><span class="v">${fmt(val)} ›</span></button>
       <button class="lrow rowbtn" data-act="gGo" data-s="1"><span class="sign">💳</span><span class="lbl"><span class="t">Pagamento</span></span><span class="v">${resumoPag()} ›</span></button>
@@ -1210,6 +1214,31 @@ function salvarGasto(){
   const f=ITEMS.find(x=>x.lanc===l.id);
   toast(`${editou?'Alterado':'Lançado'}: ${esc(l.desc)} · ${n>1?`${n}x de ${fmt(f.valor)}, a 1ª`:fmt(val)} pesa em <b>${mesNome(f.ym)}</b>.`,[{t:'Desfazer',a:'undo'}]);
 }
+const PAGA={boleto:'Boleto',pix:'Pix',debito:'Débito automático',transferencia:'Transferência'};
+let DV={};
+function sheetDivida(id){
+  const l=id?S.lancs.find(x=>x.id===id):null;
+  const its=l?ITEMS.filter(x=>x.lanc===id):[], pagas=its.filter(x=>x.status==='pago').length;
+  DV={pagaCom:l?(l.pagaCom||'boleto'):'boleto'};
+  const vp=l?(l.valorParcela||split(l.valor,l.parcelas||1)[0]):0;
+  const f=v=>v?(v/100).toLocaleString('pt-BR',{minimumFractionDigits:2}):'';
+  openSheet(`<h2>${l?'Editar empréstimo ou dívida':'Novo empréstimo ou dívida'}</h2>
+  <div class="field"><label for="dvNome">Nome</label><input class="inp" id="dvNome" value="${esc(l?l.desc:'')}" placeholder="Ex.: Empréstimo 3"></div>
+  <div class="grid2"><div class="field"><label for="dvVp">Valor da parcela</label><input class="inp num" id="dvVp" inputmode="decimal" value="${f(vp)}" placeholder="0,00" data-dv="1"></div>
+  <div class="field"><label for="dvN">Total de parcelas</label><input class="inp num" id="dvN" type="number" min="1" max="120" value="${l?l.parcelas||1:''}" placeholder="Ex.: 12" data-dv="1"></div></div>
+  <div class="field"><label for="dvVenc">Vencimento da 1ª parcela</label><input class="inp" id="dvVenc" type="date" value="${l?(l.primeiroVenc||l.data):TODAY}" data-dv="1"></div>
+  <div class="field"><label>Como você paga</label><div class="chips" id="dvPaga">${Object.entries(PAGA).map(([k,n])=>`<button class="chip ${DV.pagaCom===k?'on':''}" data-act="dvPaga" data-k="${k}">${n}</button>`).join('')}</div></div>
+  <div class="field"><label for="dvCat">Categoria</label><select class="inp" id="dvCat">${S.cats.map(c=>`<option value="${c.id}" ${c.id===(l?l.cat:'emprestimo')?'selected':''}>${c.ic} ${esc(c.nome)}</option>`).join('')}</select></div>
+  <div class="preview" id="dvPrev"></div>
+  ${l&&pagas?`<p class="small muted" style="margin:0">${pagas} de ${l.parcelas} parcelas já contam como pagas.</p>`:''}
+  <button class="btn" data-act="salvarDivida" data-id="${l?l.id:''}">${l?'Salvar alterações':'Adicionar'}</button>
+  ${l?`<div id="lancAcoes"><button class="btn danger" data-act="pedirExcluir" data-id="${l.id}">Excluir (foi erro)</button></div>`:''}
+  <button class="btn ghost" data-act="close">Fechar</button>`);
+  dvPrev();
+}
+function dvPrev(){const el=document.getElementById('dvPrev');if(!el)return;const vp=parseBRL(document.getElementById('dvVp').value),n=+document.getElementById('dvN').value||0,d=document.getElementById('dvVenc').value;
+  if(!vp||!n||!d){el.innerHTML='<div>Preencha parcela, total de parcelas e vencimento.</div>';return}
+  el.innerHTML=`<div><b>${n}x de ${fmt(vp)}</b> = ${fmt(vp*n)}</div><div>De ${mesAno(ym(d))} até ${mesAno(ym(d)+n-1)}, todo dia ${+d.slice(8,10)}.</div>`}
 function sheetLanc(id){
   const l=S.lancs.find(x=>x.id===id); if(!l) return;
   const its=ITEMS.filter(x=>x.lanc===id), c=catOf(l.cat), n=l.parcelas||1;
@@ -1343,7 +1372,14 @@ const ACT={
   gCat:el=>{G.cat=el.dataset.val;G.step=3;drawGasto()},
   gSet:el=>{G[el.dataset.k]=el.dataset.val;if(el.dataset.k==='forma'&&el.dataset.val!=='credito'&&el.dataset.val!=='boleto')G.n=1;drawGasto()},
   salvarGasto:()=>salvarGasto(),
-  editLanc:el=>editarLanc(el.dataset.id),
+  editLanc:el=>{const l=S.lancs.find(x=>x.id===el.dataset.id);if(l&&l.forma==='boleto')sheetDivida(l.id);else editarLanc(el.dataset.id)},
+  novaDivida:()=>sheetDivida(null),
+  dvPaga:el=>{DV.pagaCom=el.dataset.k;document.querySelectorAll('#dvPaga .chip').forEach(b=>b.classList.toggle('on',b===el))},
+  salvarDivida:el=>{const vp=parseBRL(document.getElementById('dvVp').value),n=Math.max(1,+document.getElementById('dvN').value||0),d=document.getElementById('dvVenc').value;
+    if(!vp||!d){toast('Preencha o valor da parcela e o vencimento.');return}snap();
+    let l=el.dataset.id?S.lancs.find(x=>x.id===el.dataset.id):null;if(!l){l={id:'d'+Date.now(),data:d};S.lancs.push(l)}
+    Object.assign(l,{desc:document.getElementById('dvNome').value.trim()||'Empréstimo',cat:document.getElementById('dvCat').value,forma:'boleto',parcelas:n,valorParcela:vp,valor:vp*n,primeiroVenc:d,pagaCom:DV.pagaCom});delete l.card;delete l.primeiraFatura;
+    recompute();closeSheet();render();toast(`${esc(l.desc)} salvo: ${n}x de ${fmt(vp)}.`,[{t:'Desfazer',a:'undo'}])},
   undo:()=>{if(!UNDO)return;S=JSON.parse(UNDO);UNDO=null;recompute();render();document.querySelectorAll('.toast').forEach(t=>t.remove());toast('Desfeito.')},
   gModo:el=>{UI.modo=el.dataset.m;render()},
   gDim:el=>{UI.dim=el.dataset.d;render()},
@@ -1399,7 +1435,7 @@ const ACT={
     recompute();closeSheet();render();toast(`Receita salva em ${mesNome(ym(d))}.`,[{t:'Desfazer',a:'undo'}])},
   salvarMov:el=>{const v=parseBRL(document.getElementById('mValor').value);if(!v)return;S.movs.push({id:'v'+Date.now(),meta:el.dataset.id,valor:v*(+el.dataset.s),data:TODAY,desc:+el.dataset.s>0?'Aporte extra':'Resgate'});recompute();closeSheet();toast(+el.dataset.s>0?'Guardado.':'Resgatado.');render()},
   simForma:el=>{SIM.forma=el.dataset.f;if(el.dataset.c)SIM.card=el.dataset.c;render()},
-  simConfirmar:()=>{const l={id:'u'+Date.now(),desc:SIM.desc||'Compra',cat:'compras',valor:SIM.valor,data:TODAY,forma:SIM.forma==='credito'?'credito':'pix'};
+  simConfirmar:()=>{const l={id:'u'+Date.now(),desc:SIM.desc||'Compra',cat:'outros',valor:SIM.valor,data:TODAY,forma:SIM.forma==='credito'?'credito':'pix'};
     if(SIM.forma==='credito'){l.card=SIM.card;if(SIM.n>1)l.parcelas=SIM.n;if(SIM.vp&&SIM.n>1)l.valorParcela=SIM.vp}
     S.lancs.push(l);recompute();const f=ITEMS.find(x=>x.lanc===l.id);UI.tab='inicio';render();scrollTo(0,0);toast(`Compra lançada. A 1ª parcela pesa em <b>${mesNome(f.ym)}</b>.`)},
   novoCartao:()=>{const id='c'+Date.now();S.cards.push({id,nome:'Novo cartão',tom:S.cards.length%2?'mint':'lilac',limite:200000,fecha:15,vence:22,fechaNaAtual:false});recompute();render();toast('Cartão criado. Ajuste fechamento e vencimento abaixo.')},
@@ -1412,6 +1448,7 @@ const ACT={
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const a=ACT[el.dataset.act];if(a){a(el,e);talvezSalvar()}});
 document.addEventListener('input',e=>{
   const t=e.target;
+  if(t.dataset.dv){dvPrev();return}
   if(t.dataset.g){G[t.dataset.g]=t.value;drawPrev();return}
   if(t.dataset.sim){const k=t.dataset.sim;SIM[k]=k==='desc'?t.value:k==='n'?+t.value:parseBRL(t.value);clearTimeout(window._st);window._st=setTimeout(()=>{const id=t.id,pos=t.selectionStart;render();const n=document.getElementById(id);if(n&&n.tagName==='INPUT'){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}},450)}
 });
@@ -1427,6 +1464,7 @@ document.addEventListener('change',e=>{
   if(k==='cat'){catOf(t.dataset.id).grupo=t.value}
   recompute();render();talvezSalvar();
 });
+['gesturestart','gesturechange'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet();if(e.key==='Enter'&&document.getElementById('gw')&&e.target.matches('#gValor,#gDesc')){e.preventDefault();ACT.gNext()}});
 /* tooltip */
 const tip=document.createElement('div');tip.className='tip';tip.hidden=true;document.body.appendChild(tip);
