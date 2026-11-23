@@ -424,14 +424,15 @@ const FORMAS={pix:'Pix',debito:'Débito',dinheiro:'Dinheiro',credito:'Crédito',
    ========================================================== */
 const FIREBASE={apiKey:"AIzaSyC966WazsmQV2qwAAWorZk0Dcz9ePGtIJI",authDomain:"isabelle-financas.firebaseapp.com",databaseURL:"https://isabelle-financas-default-rtdb.firebaseio.com",projectId:"isabelle-financas"};
 const SALA="financas/meudinheiro-5b8e31c2d9f4";   // gaveta do MeuDinheiro — NÃO MUDAR
-const VERSAO='1.2', CHAVE='meudinheiro-v1';
+const VERSAO='1.3', CHAVE='meudinheiro-v1';
 const ATUALIZACOES=[
+  {v:'1.3',data:'23/11/2026',itens:['Dívidas com plano flexível: você define quanto paga em cada mês e pode mudar quando quiser. Pagou a mais num mês? Ajuste o valor e toque em "Ajustar o resto": os meses seguintes diminuem sozinhos.','Nova tela Plano, em Mais: os passos combinados (quitações, metas, datas), com caixinha pra marcar o que já fez. Não mexe nos números do app.','No A pagar, os aportes aparecem como Reserva, não mais como Poupança.']},
   {v:'1.2',data:'14/10/2026',itens:['Empréstimos e dívidas têm uma tela própria de edição: nome, valor da parcela, total de parcelas, vencimento e como você paga (boleto, Pix, débito ou transferência).','Corrigido: editar um empréstimo e escolher Pix transformava ele num gasto único e ele sumia da lista.','A tela não dá mais zoom sozinha ao tocar nos campos ou dar dois toques.','Na aba Dívidas, botão para adicionar um empréstimo novo.']},
   {v:'1.1',data:'05/10/2026',itens:['Nova aba Recorrentes: assinaturas e contas fixas num só lugar, com total por mês, próximas cobranças, cancelar e reativar.','A versão do app aparece pequena no topo da tela. Toque nela para ver as novidades.','Configurações mais limpas: cartões, teto e salário ficam em "Ajustes do app", recolhidos.','Salário passou para o menu Mais.','Cada mês mostra os gastos feitos nele, seja no cartão, no Pix, no débito ou em dinheiro, junto com as dívidas e poupanças, e a sobra do mês.','Cada mês começa do zero: o app não puxa mais saldo do mês anterior. O que entrou, saiu e sobrou em cada mês fica em Mais › Relatórios.','Na Início, "De onde vem esse número" virou "A pagar": A pagar, Pago e Falta, cada fatura, cada dívida e cada poupança pelo dia, um toque para marcar como paga, e quanto entra e sobra.']},
   {v:'1.0',data:'05/10/2026',itens:['Primeira versão do MeuDinheiro, com os dados do backup de 05/10.']}
 ];
 function normaliza(v){const b=JSON.parse(JSON.stringify(SEED));b.atualizadoEm=0;if(!v||typeof v!=='object')return b;
-  const r=Object.assign(b,v);['cats','cards','recs','lancs','receitas','metas','movs','pagos','abertos','livres','salarios'].forEach(k=>{if(!Array.isArray(r[k]))r[k]=Array.isArray(b[k])?b[k]:[]});
+  const r=Object.assign(b,v);['cats','cards','recs','lancs','receitas','metas','movs','pagos','abertos','livres','salarios','plano'].forEach(k=>{if(!Array.isArray(r[k]))r[k]=Array.isArray(b[k])?b[k]:[]});
   r.salHist=r.salHist||{};r.config=Object.assign({},b.config,v.config||{});if(r.config.inicio==='2026-10')r.config.inicio='2026-09';return r}
 let S=(()=>{try{const t=localStorage.getItem(CHAVE);if(t)return normaliza(JSON.parse(t))}catch(e){}return normaliza(null)})();
 let fbRef=null,timer=null,ignorar=false,pendente=false,ultimo=JSON.stringify(S),estado='local';
@@ -479,6 +480,10 @@ function buildItems(){
         const d=dateIn(f.venc+i,card.vence);
         out.push({ym:f.venc+i,date:d,close:f.close+i,compra:l.data,valor:vals[i],kind:'cartao',card:l.card,cat:l.cat,grupo:g,desc:l.desc,i:i+1,n,lanc:l.id,status:d<=TODAY?'pago':'previsto'});
       }
+    }else if(l.forma==='boleto'&&l.cronograma){
+      const pv=l.primeiroVenc||l.data, day=+pv.slice(8,10), ks=Object.keys(l.cronograma).filter(k=>l.cronograma[k]>0).sort();
+      ks.forEach((k,i)=>{const d=dateIn(ym(k),day);
+        out.push({ym:ym(k),date:d,compra:l.data,valor:l.cronograma[k],kind:'divida',cat:l.cat,grupo:g,desc:l.desc,i:i+1,n:ks.length,lanc:l.id,flex:true,status:d<=TODAY?'pago':'previsto'})});
     }else if(l.forma==='boleto'){
       const pv=l.primeiroVenc||l.data, first=ym(pv), day=+pv.slice(8,10);
       for(let i=0;i<n;i++){const d=dateIn(first+i,day); if(l.cancelado&&d>l.cancelado) continue;
@@ -561,6 +566,7 @@ const TABS=[
 ];
 const MAIS=[
   {id:'salario',nome:'Salário',ic:'💵',d:'Salário mês a mês, 13º e outras receitas'},
+  {id:'plano',nome:'Plano',ic:'🗺️',d:'Passos combinados, sem mexer nas contas'},
   {id:'dividas',nome:'Dívidas',ic:'📉',d:'Parcelamentos e empréstimos, quanto falta e quando acaba'},
   {id:'reservas',nome:'Reservas',ic:'🐷',d:'Metas e dinheiro guardado'},
   {id:'relatorios',nome:'Relatórios',ic:'📊',d:'O que entrou, saiu e sobrou em cada mês'},
@@ -655,7 +661,7 @@ function pillPagar(l){
 function aPagar(r){
   const L=linhasAPagar(r).map(l=>({...l,chk:true}));
   const metas={};r.items.filter(x=>x.kind==='reserva').forEach(x=>{const m=metas[x.meta]=metas[x.meta]||{valor:0,date:x.date,pago:true};m.valor+=x.valor;if(x.status!=='pago')m.pago=false;if(x.date<m.date)m.date=x.date});
-  Object.entries(metas).forEach(([k,m])=>{const mt=S.metas.find(z=>z.id===k);L.push({tipo:'reserva',nome:`Poupança ${mt?mt.nome:''}`,sub:'aporte mensal',ic:'🐷',date:m.date,valor:m.valor,pago:m.pago,act:'data-act="tab" data-t="reservas"'})});
+  Object.entries(metas).forEach(([k,m])=>{const mt=S.metas.find(z=>z.id===k);L.push({tipo:'reserva',nome:`Reserva ${mt?mt.nome:''}`,sub:'aporte mensal',ic:'🐷',date:m.date,valor:m.valor,pago:m.pago,act:'data-act="tab" data-t="reservas"'})});
   L.sort((a,b)=>a.date.localeCompare(b.date));
   if(r.avista) L.push({tipo:'avista',nome:'Pix, débito e dinheiro',sub:'já saiu na hora',ic:'⚡',date:'',valor:r.avista,pago:true,act:'data-act="tab" data-t="gastos"'});
   const tot=L.reduce((a,l)=>a+l.valor,0), pago=L.filter(l=>l.pago).reduce((a,l)=>a+l.valor,0), falta=tot-pago;
@@ -975,11 +981,11 @@ function viewDividas(){
   ${chartBars(mensal.map(m=>({...m,col:'var(--s-div)'})))}</section>
   ${['curto','medio','longo'].map(p=>{const g=ds.filter(d=>d.prazo===p);if(!g.length)return '';return `<section class="card"><h3 style="margin-bottom:6px">${grp[p]}</h3>
     ${g.map(d=>`<button class="item" data-act="verLanc" data-id="${d.l.id}" style="grid-template-columns:40px 1fr auto"><div class="ico">${catOf(d.l.cat).ic}</div>
-    <div class="main"><div class="t">${esc(d.l.desc)}</div><div class="d">${d.pagas}/${d.n} pagas · ${d.n}x de ${fmt(d.parcela)} · ${d.l.forma==='credito'?cardOf(d.l.card).nome:'boleto'}</div>
+    <div class="main"><div class="t">${esc(d.l.desc)}</div><div class="d">${d.l.cronograma?`${d.pagas}/${d.a.length} pagas · plano flexível · ${PAGA[d.l.pagaCom]||'Pix'}`:`${d.pagas}/${d.n} pagas · ${d.n}x de ${fmt(d.parcela)} · ${d.l.forma==='credito'?cardOf(d.l.card).nome:'boleto'}`}</div>
     <div class="meter" style="margin-top:6px;height:6px"><i style="width:${d.pagas/d.n*100}%;background:var(--s-div)"></i></div>
     <div class="impact" style="color:var(--muted)">Termina em ${mesAno(d.fim)}${d.juros?` · juros ${fmt(d.juros)}`:''}</div></div>
     <div class="r"><div class="small muted">falta</div><div class="v num">${fmt(d.restante)}</div></div></button>`).join('')}</section>`}).join('')}
-  <button class="btn ghost" data-act="novaDivida">+ Novo empréstimo ou dívida</button>
+  <div class="grid2"><button class="btn ghost" data-act="novaDivida">+ Parcela fixa</button><button class="btn ghost" data-act="novaCrono">+ Plano flexível</button></div>
   <section class="card"><div class="sec-h" style="margin:0 0 6px"><h3>Sem parcela fixa</h3><button class="link" data-act="editLivre" data-id="">+ Adicionar</button></div>${livres.map(x=>`<button class="item" data-act="editLivre" data-id="${x.id}" style="grid-template-columns:40px 1fr auto"><div class="ico">🤝</div><div class="main"><div class="t">${esc(x.nome)}</div><div class="d">${esc(x.obs)}</div></div><div class="r"><div class="small muted">falta</div><div class="v num">${fmt(x.saldo)}</div></div></button>`).join('')||'<p class="small muted">Nenhuma.</p>'}<p class="small muted" style="margin:6px 0 0">Não entra no orçamento do mês porque não tem parcela definida.</p></section>
   <div class="note small">Compras parceladas no cartão aparecem aqui automaticamente. Não há um cadastro separado: é a mesma compra, vista de outro jeito.</div>
   </div>`;
@@ -1006,6 +1012,78 @@ function viewReservas(){
   <button class="btn ghost" data-act="editMeta" data-id="">+ Nova reserva</button>
   <section class="card"><div class="sec-h" style="margin:0 0 8px"><h2>Evolução</h2><span class="small muted">inclui aportes previstos</span></div>${chartLine(serie)}</section>
   </div>`;
+}
+
+
+/* ---------- PLANO (roteiro, não mexe nas contas) ---------- */
+function viewPlano(){
+  const P=(S.plano||[]).slice().sort((a,b)=>(a.data||'').localeCompare(b.data||'')), feitos=P.filter(p=>p.feito).length;
+  const grupos={};P.forEach(p=>{const k=p.data?p.data.slice(0,7):'sem data';(grupos[k]=grupos[k]||[]).push(p)});
+  return `${backBtn('Plano')}<div class="stack">
+  <section class="card stack" style="gap:6px"><div class="eyebrow">Seu roteiro</div><div class="bignum num" style="font-size:2rem;color:var(--lilac)">${feitos} de ${P.length}</div>
+  ${P.length?`<div class="meter"><i style="width:${feitos/P.length*100}%;background:var(--s-res)"></i></div>`:''}<div class="small muted">passos já feitos</div></section>
+  <div class="note small">O plano é só o roteiro combinado. Ele não entra no saldo, nas faturas nem no A pagar. Quando fizer de verdade, lance no app como sempre e marque o passo aqui.</div>
+  ${Object.entries(grupos).map(([k,a])=>`<section class="card"><h3 style="margin-bottom:6px;text-transform:capitalize">${k==='sem data'?'Sem data':mesAno(ym(k))}</h3>
+    ${a.map(p=>`<div class="item" style="grid-template-columns:40px 1fr auto"><button class="ico" data-act="planoTog" data-id="${p.id}" aria-label="${p.feito?'Desmarcar':'Marcar como feito'}" style="border:0;cursor:pointer">${p.feito?'✅':'⬜'}</button>
+      <button data-act="editPlano" data-id="${p.id}" style="all:unset;cursor:pointer;display:block;min-width:0"><div class="t" style="white-space:normal;overflow:visible;${p.feito?'text-decoration:line-through;opacity:.6':''}">${esc(p.titulo)}</div><div class="d">${p.data?ddmm(p.data):''}${p.obs?(p.data?' · ':'')+esc(p.obs):''}</div></button>
+      <div class="r" style="white-space:nowrap">${p.valor?`<div class="v num">${fmt(p.valor)}</div>`:''}</div></div>`).join('')}</section>`).join('')||'<p class="small muted">Nenhum passo ainda.</p>'}
+  <button class="btn ghost" data-act="editPlano" data-id="">+ Novo passo</button>
+  </div>`;
+}
+function sheetPlano(id){
+  const p=id?(S.plano||[]).find(x=>x.id===id):null;
+  openSheet(`<h2>${p?'Editar passo':'Novo passo'}</h2>
+  <div class="field"><label for="plTit">O que fazer</label><input class="inp" id="plTit" value="${esc(p?p.titulo:'')}" placeholder="Ex.: Quitar empréstimo"></div>
+  <div class="grid2"><div class="field"><label for="plData">Quando</label><input class="inp" id="plData" type="date" value="${p&&p.data?p.data:''}"></div>
+  <div class="field"><label for="plVal">Valor (opcional)</label><input class="inp num" id="plVal" inputmode="decimal" value="${p&&p.valor?(p.valor/100).toLocaleString('pt-BR',{minimumFractionDigits:2}):''}" placeholder="0,00"></div></div>
+  <div class="field"><label for="plObs">Observação</label><input class="inp" id="plObs" value="${esc(p?p.obs||'':'')}" placeholder="Ex.: com a 1ª parcela do 13º"></div>
+  <button class="btn" data-act="salvarPlano" data-id="${p?p.id:''}">${p?'Salvar':'Adicionar'}</button>
+  ${p?`<button class="btn danger" data-act="delPlano" data-id="${p.id}">Excluir passo</button>`:''}
+  <button class="btn ghost" data-act="close">Fechar</button>`);
+}
+
+/* ---------- DÍVIDA COM PLANO FLEXÍVEL ---------- */
+let CR=null;
+function sheetCrono(id){
+  const l=id?S.lancs.find(x=>x.id===id):null;
+  if(l){const day=+(l.primeiroVenc||l.data).slice(8,10);CR={id:l.id,nome:l.desc,total:l.valor,dia:day,pagaCom:l.pagaCom||'pix',obs:l.obs||'',rows:Object.keys(l.cronograma).sort().map(k=>({k,v:l.cronograma[k]}))}}
+  else CR={id:'',nome:'',total:0,dia:5,pagaCom:'pix',obs:'',rows:[]};
+  drawCrono();
+}
+function crPaga(k){return dateIn(ym(k),CR.dia)<=TODAY||(S.pagos||[]).includes(`lanc:${CR.id}:${k}`)}
+function drawCrono(){
+  const f=v=>v?(v/100).toLocaleString('pt-BR',{minimumFractionDigits:2}):'';
+  openSheet(`<h2>${CR.id?'Plano de pagamento':'Nova dívida com plano flexível'}</h2>
+  <div class="field"><label for="crNome">Nome</label><input class="inp" id="crNome" data-cr="nome" value="${esc(CR.nome)}" placeholder="Ex.: Celular – Tio" data-nofocus="1"></div>
+  <div class="grid2"><div class="field"><label for="crTot">Valor total da dívida</label><input class="inp num" id="crTot" data-cr="total" inputmode="decimal" value="${f(CR.total)}" placeholder="0,00"></div>
+  <div class="field"><label for="crDia">Dia do pagamento</label><input class="inp num" id="crDia" data-cr="dia" type="number" min="1" max="28" value="${CR.dia}"></div></div>
+  <div class="field"><label>Como você paga</label><div class="chips">${Object.entries(PAGA).map(([k,n])=>`<button class="chip ${CR.pagaCom===k?'on':''}" data-act="crPaga" data-k="${k}">${n}</button>`).join('')}</div></div>
+  ${CR.rows.length?'':`<div class="grid2"><div class="field"><label for="crPor">Quanto por mês</label><input class="inp num" id="crPor" inputmode="decimal" placeholder="0,00"></div>
+  <div class="field"><label for="crIni">Primeiro mês</label><input class="inp" id="crIni" type="month" value="${ymKey(TODAY_YM+1)}"></div></div>
+  <button class="btn ghost" data-act="crGerar">Montar os meses</button>`}
+  ${CR.rows.length?`<section class="card"><h3 style="margin-bottom:6px">Quanto vai em cada mês</h3><p class="small muted" style="margin:0 0 8px">Pode mudar qualquer mês ainda não pago. Pagou a mais? Aumente o valor do mês e toque em <b>Ajustar o resto</b>.</p>
+  ${CR.rows.map((r,i)=>{const pg=crPaga(r.k);return `<div class="row between" style="gap:8px;margin:6px 0"><span style="text-transform:capitalize;min-width:92px">${mesAno(ym(r.k))}</span>
+    ${pg?`<span class="num"><b>${fmt(r.v)}</b> <span class="pill p-ok">pago</span></span>`:`<input class="inp num" style="max-width:130px" inputmode="decimal" data-cri="${i}" value="${f(r.v)}"><button class="iconbtn" data-act="crDel" data-i="${i}" aria-label="Tirar este mês">×</button>`}</div>`}).join('')}
+  <div class="row" style="gap:8px;margin-top:8px"><button class="btn ghost" style="padding:9px" data-act="crAdd">+ Mês</button><button class="btn ghost" style="padding:9px" data-act="crAjustar">Ajustar o resto</button></div></section>
+  <div class="preview" id="crRes"></div>`:''}
+  <button class="btn" data-act="salvarCrono">${CR.id?'Salvar plano':'Adicionar dívida'}</button>
+  ${CR.id?`<div id="lancAcoes"><button class="btn danger" data-act="pedirExcluir" data-id="${CR.id}">Excluir (foi erro)</button></div>`:''}
+  <button class="btn ghost" data-act="close">Fechar</button>`);
+  crResumo();
+}
+function crResumo(){const el=document.getElementById('crRes');if(!el)return;
+  const soma=CR.rows.reduce((a,r)=>a+r.v,0),pago=CR.rows.filter(r=>crPaga(r.k)).reduce((a,r)=>a+r.v,0),dif=CR.total-soma;
+  const fim=CR.rows.filter(r=>r.v>0).map(r=>r.k).sort().pop();
+  el.innerHTML=`<div><b>Planejado ${fmt(soma)}</b> de ${fmt(CR.total)} · já pago ${fmt(pago)}</div>
+  ${dif===0?`<div>Fecha certinho. Termina em ${fim?mesAno(ym(fim)):'—'}.</div>`:dif>0?`<div style="color:var(--danger)">Faltam ${fmt(dif)} no plano. Toque em Ajustar o resto ou aumente algum mês.</div>`:`<div style="color:var(--danger)">Passou ${fmt(-dif)} do total. Toque em Ajustar o resto pra tirar dos últimos meses.</div>`}`}
+function crLer(){const g=id=>document.getElementById(id);if(g('crNome'))CR.nome=g('crNome').value;if(g('crTot'))CR.total=parseBRL(g('crTot').value);if(g('crDia'))CR.dia=Math.min(28,Math.max(1,+g('crDia').value||5));
+  document.querySelectorAll('[data-cri]').forEach(inp=>{CR.rows[+inp.dataset.cri].v=parseBRL(inp.value)})}
+function crAjustar(){
+  let dif=CR.total-CR.rows.reduce((a,r)=>a+r.v,0);
+  const abertas=CR.rows.map((r,i)=>i).filter(i=>!crPaga(CR.rows[i].k));
+  if(dif>0){if(!abertas.length){const last=CR.rows.length?ym(CR.rows[CR.rows.length-1].k):TODAY_YM;CR.rows.push({k:ymKey(last+1),v:dif})}else CR.rows[abertas[abertas.length-1]].v+=dif}
+  else for(let j=abertas.length-1;j>=0&&dif<0;j--){const r=CR.rows[abertas[j]],tira=Math.min(r.v,-dif);r.v-=tira;dif+=tira}
+  CR.rows=CR.rows.filter(r=>r.v>0||crPaga(r.k));
 }
 
 /* ---------- RELATÓRIOS ---------- */
@@ -1344,7 +1422,7 @@ function sheetLivre(id){
 const DEL_TXT={conta:'A recorrente some de todos os meses.',receita:'A receita some do mês.',cat:'A categoria some da lista.',meta:'A reserva e o saldo dela somem.',livre:'A dívida some da lista.'};
 const DEL_BOX={conta:'contaDel',receita:'recDel',cat:'catDel',meta:'metaDel',livre:'livreDel'};
 /* ---------- AÇÕES ---------- */
-const VIEWS={recorrentes:viewRecorrentes,inicio:viewInicio,gastos:viewGastos,cartoes:viewCartoes,salario:viewSalario,mais:viewMais,dividas:viewDividas,reservas:viewReservas,relatorios:viewRelatorios,disciplina:viewDisciplina,simulador:viewSimulador,config:viewConfig};
+const VIEWS={recorrentes:viewRecorrentes,inicio:viewInicio,gastos:viewGastos,cartoes:viewCartoes,salario:viewSalario,mais:viewMais,dividas:viewDividas,reservas:viewReservas,plano:viewPlano,relatorios:viewRelatorios,disciplina:viewDisciplina,simulador:viewSimulador,config:viewConfig};
 const ACT={
   tab:el=>{UI.tab=el.dataset.t;closeSheet();render();scrollTo(0,0)},
   mes:el=>{UI.v+=+el.dataset.d;render()},
@@ -1354,7 +1432,28 @@ const ACT={
   cardSel:el=>{UI.card=el.dataset.id;render()},
   irCartao:el=>{UI.card=el.dataset.id;UI.tab='cartoes';render();scrollTo(0,0)},
   verFatura:el=>sheetFatura(+el.dataset.k),
-  verLanc:el=>sheetLanc(el.dataset.id),
+  verLanc:el=>{const l=S.lancs.find(x=>x.id===el.dataset.id);if(l&&l.cronograma)sheetCrono(l.id);else sheetLanc(el.dataset.id)},
+  novaCrono:()=>sheetCrono(null),
+  crPaga:el=>{crLer();CR.pagaCom=el.dataset.k;drawCrono()},
+  crGerar:()=>{crLer();const por=parseBRL(document.getElementById('crPor').value),ini=document.getElementById('crIni').value;
+    if(!CR.total||!por||!ini){toast('Preencha o total, quanto por mês e o primeiro mês.');return}
+    CR.rows=[];let falta=CR.total,v=ym(ini);while(falta>0&&CR.rows.length<120){const x=Math.min(por,falta);CR.rows.push({k:ymKey(v++),v:x});falta-=x}drawCrono()},
+  crAdd:()=>{crLer();const last=CR.rows.length?ym(CR.rows[CR.rows.length-1].k):TODAY_YM;CR.rows.push({k:ymKey(last+1),v:0});drawCrono()},
+  crDel:el=>{crLer();CR.rows.splice(+el.dataset.i,1);drawCrono()},
+  crAjustar:()=>{crLer();crAjustar();drawCrono()},
+  salvarCrono:()=>{crLer();if(!CR.total||!CR.rows.length){toast('Preencha o total e monte os meses.');return}
+    const soma=CR.rows.reduce((a,r)=>a+r.v,0);if(soma!==CR.total){toast('O plano não fecha com o total. Toque em Ajustar o resto.');return}
+    snap();let l=CR.id?S.lancs.find(x=>x.id===CR.id):null;const ks=CR.rows.filter(r=>r.v>0).map(r=>r.k).sort();
+    if(!l){l={id:'d'+Date.now(),data:TODAY};S.lancs.push(l)}
+    const crono={};CR.rows.filter(r=>r.v>0).forEach(r=>crono[r.k]=r.v);
+    Object.assign(l,{desc:CR.nome.trim()||'Dívida',cat:l.cat||'emprestimo',forma:'boleto',pagaCom:CR.pagaCom,valor:CR.total,cronograma:crono,parcelas:ks.length,primeiroVenc:dateIn(ym(ks[0]),CR.dia)});
+    delete l.valorParcela;delete l.card;delete l.primeiraFatura;recompute();closeSheet();render();toast(`${esc(l.desc)} salvo.`,[{t:'Desfazer',a:'undo'}])},
+  planoTog:el=>{const p=(S.plano||[]).find(x=>x.id===el.dataset.id);if(!p)return;snap();p.feito=!p.feito;render()},
+  editPlano:el=>sheetPlano(el.dataset.id||null),
+  salvarPlano:el=>{const t=document.getElementById('plTit').value.trim();if(!t){toast('Escreva o que fazer.');return}snap();S.plano=S.plano||[];
+    let p=el.dataset.id?S.plano.find(x=>x.id===el.dataset.id):null;if(!p){p={id:'pl'+Date.now(),feito:false};S.plano.push(p)}
+    Object.assign(p,{titulo:t,data:document.getElementById('plData').value,valor:parseBRL(document.getElementById('plVal').value),obs:document.getElementById('plObs').value.trim()});closeSheet();render();toast('Passo salvo.',[{t:'Desfazer',a:'undo'}])},
+  delPlano:el=>{snap();S.plano=(S.plano||[]).filter(x=>x.id!==el.dataset.id);closeSheet();render();toast('Passo excluído.',[{t:'Desfazer',a:'undo'}])},
   verConta:el=>sheetConta(el.dataset.id),
   novaConta:()=>sheetConta(null),
   novoGasto:()=>sheetGasto(),
@@ -1372,7 +1471,7 @@ const ACT={
   gCat:el=>{G.cat=el.dataset.val;G.step=3;drawGasto()},
   gSet:el=>{G[el.dataset.k]=el.dataset.val;if(el.dataset.k==='forma'&&el.dataset.val!=='credito'&&el.dataset.val!=='boleto')G.n=1;drawGasto()},
   salvarGasto:()=>salvarGasto(),
-  editLanc:el=>{const l=S.lancs.find(x=>x.id===el.dataset.id);if(l&&l.forma==='boleto')sheetDivida(l.id);else editarLanc(el.dataset.id)},
+  editLanc:el=>{const l=S.lancs.find(x=>x.id===el.dataset.id);if(l&&l.cronograma)sheetCrono(l.id);else if(l&&l.forma==='boleto')sheetDivida(l.id);else editarLanc(el.dataset.id)},
   novaDivida:()=>sheetDivida(null),
   dvPaga:el=>{DV.pagaCom=el.dataset.k;document.querySelectorAll('#dvPaga .chip').forEach(b=>b.classList.toggle('on',b===el))},
   salvarDivida:el=>{const vp=parseBRL(document.getElementById('dvVp').value),n=Math.max(1,+document.getElementById('dvN').value||0),d=document.getElementById('dvVenc').value;
@@ -1449,6 +1548,7 @@ document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if
 document.addEventListener('input',e=>{
   const t=e.target;
   if(t.dataset.dv){dvPrev();return}
+  if(CR&&(t.dataset.cri!==undefined||t.dataset.cr)){crLer();crResumo();return}
   if(t.dataset.g){G[t.dataset.g]=t.value;drawPrev();return}
   if(t.dataset.sim){const k=t.dataset.sim;SIM[k]=k==='desc'?t.value:k==='n'?+t.value:parseBRL(t.value);clearTimeout(window._st);window._st=setTimeout(()=>{const id=t.id,pos=t.selectionStart;render();const n=document.getElementById(id);if(n&&n.tagName==='INPUT'){n.focus();try{n.setSelectionRange(pos,pos)}catch(_){}}},450)}
 });
