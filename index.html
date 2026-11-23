@@ -388,7 +388,7 @@ h3{font-size:1rem;font-weight:700}
 <div class="app">
   <header class="top">
     <div class="brand">Meu<b>Dinheiro</b></div>
-    <div class="row"><button class="ver" id="sync" data-act="tab" data-t="config" aria-label="Versão do app e atualizações"><i></i><span>v1.2</span></button></div>
+    <div class="row"><button class="ver" id="sync" data-act="tab" data-t="config" aria-label="Versão do app e atualizações"><i></i><span id="verTxt">v1.3</span></button></div>
   </header>
   <main id="main"></main>
 </div>
@@ -1577,7 +1577,7 @@ function render(){
   document.getElementById('nav').innerHTML=TABS.map(t=>`<button class="${t.id===navTab?'on':''}" data-act="tab" data-t="${t.id}" aria-label="${t.nome}"><svg viewBox="0 0 24 24">${t.svg}</svg>${t.nome}</button>`).join('');
   document.querySelector('.fab').hidden=!['inicio','gastos','cartoes'].includes(UI.tab);
 }
-recompute();render();marcar('local');
+recompute();render();marcar('local');{const vt=document.getElementById('verTxt');if(vt)vt.textContent='v'+VERSAO}
 try{const vista=localStorage.getItem(CHAVE+'-versao');if(vista&&vista!==VERSAO)setTimeout(()=>toast(`Atualizado para a versão ${VERSAO}.`,[{t:'Ver novidades',a:'verNovidades'}]),600);localStorage.setItem(CHAVE+'-versao',VERSAO)}catch(e){}
 carregarFirebase();
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
